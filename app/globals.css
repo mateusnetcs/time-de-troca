@@ -1,0 +1,56 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --font-sans: var(--font-inter);
+  --font-outfit: var(--font-outfit);
+  
+  --color-primary: #4F46E5;
+  --color-primary-light: #EEF2FF;
+  --color-success: #10B981;
+  --color-bg-main: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-text-main: #1E293B;
+  --color-text-muted: #64748B;
+  --color-border-main: #E2E8F0;
+  
+  --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+:root {
+  --selection-bg: #e0e7ff;
+  --selection-text: #4338ca;
+  
+  /* Fallback definitions for non-tailwind contexts or older browsers */
+  --primary: #4F46E5;
+  --bg-main: #F8FAFC;
+  --surface: #FFFFFF;
+  --text-main: #1E293B;
+  --text-muted: #64748B;
+}
+
+::selection {
+  background: var(--selection-bg);
+  color: var(--selection-text);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+body {
+  @apply bg-bg-main text-text-main antialiased selection:bg-indigo-100 selection:text-indigo-900;
+}
+
+.card-shadow {
+  box-shadow: var(--shadow-card);
+}
+
+.innovation-gradient {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+}

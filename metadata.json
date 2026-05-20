@@ -1,0 +1,8 @@
+{
+  "name": "Time de Troca",
+  "description": "Uma plataforma de colaboração mútua para estudantes trocarem habilidades e ganharem créditos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
