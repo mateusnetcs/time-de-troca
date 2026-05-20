@@ -159,10 +159,12 @@ export default function SistemaPage() {
   const isCurrentPlanActive = useMemo(() => {
     if (!currentSubscription) return false;
     if (currentSubscription.status === 'trialing') {
-      return Boolean(currentSubscription.trial_ends_at) && new Date(currentSubscription.trial_ends_at).getTime() >= nowTs;
+      const trialEndsAt = currentSubscription.trial_ends_at;
+      return trialEndsAt ? new Date(trialEndsAt).getTime() >= nowTs : false;
     }
     if (currentSubscription.status === 'active') {
-      return !currentSubscription.ends_at || new Date(currentSubscription.ends_at).getTime() >= nowTs;
+      const endsAt = currentSubscription.ends_at;
+      return !endsAt || new Date(endsAt).getTime() >= nowTs;
     }
     return false;
   }, [currentSubscription, nowTs]);
