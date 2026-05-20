@@ -1,5 +1,17 @@
 import { getSupabaseClient } from '@/lib/supabase';
-import type { CreditTransaction, ExchangeRequest, RequestStatus, Skill, UserProfile } from '@/lib/types';
+import type {
+  CreditTransaction,
+  ExchangeRequest,
+  PaymentMethod,
+  PaymentMethodType,
+  Plan,
+  RequestStatus,
+  ServiceRequest,
+  ServiceRequestStatus,
+  Skill,
+  Subscription,
+  UserProfile,
+} from '@/lib/types';
 
 type NewSkillInput = {
   title: string;
@@ -15,6 +27,8 @@ type OnboardingInput = {
   course: string;
   period: string;
   avatar: string;
+  role?: 'aluno' | 'tutor' | 'aluno_tutor';
+  phone_whatsapp?: string;
   skillsOffer: string;
   skillsSeek: string;
 };
@@ -92,6 +106,62 @@ export async function fetchUserRelatedRequests(profileId: string) {
   return (data ?? []) as ExchangeRequest[];
 }
 
+export async function fetchPlans() {
+  const supabase = requireClient();
+  const { data, error } = await supabase
+    .from('plans')
+    .select('*')
+    .eq('is_active', true)
+    .order('price_cents', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as Plan[];
+}
+
+export async function fetchSubscriptions(profileId: string) {
+  const supabase = requireClient();
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('profile_id', profileId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Subscription[];
+}
+
+export async function fetchPaymentMethods(profileId: string) {
+  const supabase = requireClient();
+  const { data, error } = await supabase
+    .from('payment_methods')
+    .select('*')
+    .eq('profile_id', profileId)
+    .order('is_default', { ascending: false })
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as PaymentMethod[];
+}
+
+export async function fetchServiceRequestsAsStudent(profileId: string) {
+  const supabase = requireClient();
+  const { data, error } = await supabase
+    .from('service_requests')
+    .select('*')
+    .eq('student_profile_id', profileId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as ServiceRequest[];
+}
+
+export async function fetchServiceRequestsAsTutor(profileId: string) {
+  const supabase = requireClient();
+  const { data, error } = await supabase
+    .from('service_requests')
+    .select('*')
+    .eq('tutor_profile_id', profileId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as ServiceRequest[];
+}
+
 export async function createSkill(ownerId: string, input: NewSkillInput) {
   const supabase = requireClient();
   const { error } = await supabase.from('skills').insert({
@@ -121,6 +191,100 @@ export async function updateProfile(profileId: string, patch: Partial<UserProfil
   if (error) throw error;
 }
 
+export async function savePaymentMethod(
+  profileId: string,
+  input: {
+    type: PaymentMethodType;
+    provider?: string;
+    last4?: string;
+    pix_key?: string;
+    is_default?: boolean;
+  },
+) {
+  const supabase = requireClient();
+  const payload = {
+    profile_id: profileId,
+    type: input.type,
+    provider: input.provider ?? null,
+    last4: input.last4 ?? null,
+    pix_key: input.pix_key ?? null,
+    is_default: input.is_default ?? true,
+  };
+  const { error } = await supabase.from('payment_methods').insert(payload);
+  if (error) throw error;
+}
+
+export async function subscribeToPlan(
+  profileId: string,
+  plan: Plan,
+  methodType: PaymentMethodType,
+) {
+  const supabase = requireClient();
+
+  const endsAt = new Date();
+  if (plan.billing_cycle === 'monthly') {
+    endsAt.setMonth(endsAt.getMonth() + 1);
+  } else if (plan.billing_cycle === 'quarterly') {
+    endsAt.setMonth(endsAt.getMonth() + 3);
+  } else {
+    endsAt.setFullYear(endsAt.getFullYear() + 1);
+  }
+
+  const { data: sub, error: subError } = await supabase
+    .from('subscriptions')
+    .insert({
+      profile_id: profileId,
+      plan_id: plan.id,
+      status: plan.price_cents === 0 ? 'trialing' : 'active',
+      starts_at: new Date().toISOString(),
+      ends_at: plan.price_cents === 0 ? null : endsAt.toISOString(),
+      trial_ends_at: plan.price_cents === 0 ? endsAt.toISOString() : null,
+    })
+    .select('id')
+    .single();
+
+  if (subError) throw subError;
+
+  if (plan.price_cents > 0) {
+    const { error: payError } = await supabase.from('payments').insert({
+      profile_id: profileId,
+      subscription_id: sub.id,
+      amount_cents: plan.price_cents,
+      status: 'paid',
+      method_type: methodType,
+      paid_at: new Date().toISOString(),
+    });
+    if (payError) throw payError;
+  }
+}
+
+export async function createServiceRequest(studentId: string, skill: Skill) {
+  const supabase = requireClient();
+  const { error } = await supabase.from('service_requests').insert({
+    student_profile_id: studentId,
+    tutor_profile_id: skill.owner_profile_id,
+    skill_id: skill.id,
+    status: 'pending',
+  });
+  if (error) throw error;
+}
+
+export async function updateServiceRequestStatus(
+  requestId: number,
+  status: ServiceRequestStatus,
+) {
+  const supabase = requireClient();
+  const patch: { status: ServiceRequestStatus; scheduled_at?: string | null } = { status };
+  if (status === 'scheduled') {
+    patch.scheduled_at = new Date().toISOString();
+  }
+  const { error } = await supabase
+    .from('service_requests')
+    .update(patch)
+    .eq('id', requestId);
+  if (error) throw error;
+}
+
 export async function completeOnboarding(
   profile: UserProfile,
   input: OnboardingInput,
@@ -137,8 +301,12 @@ export async function completeOnboarding(
     info: `${input.course} - ${input.period || '-'}º Período`,
     skills_offer: input.skillsOffer,
     skills_seek: input.skillsSeek,
+    role: input.role ?? profile.role ?? 'aluno',
+    phone_whatsapp: input.phone_whatsapp ?? profile.phone_whatsapp ?? profile.phone,
     onboarded: true,
     credits: profile.onboarded ? profile.credits : profile.credits + 1,
+    trial_started_at: profile.trial_started_at ?? new Date().toISOString(),
+    trial_ends_at: profile.trial_ends_at ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
   };
 
   const { error } = await supabase.from('profiles').update(nextProfile).eq('id', profile.id);
@@ -156,10 +324,30 @@ export async function completeOnboarding(
 }
 
 export async function createExchangeRequest(currentUser: UserProfile, skill: Skill) {
-  if (currentUser.credits < skill.credits) {
-    throw new Error('Saldo insuficiente para realizar esta troca.');
+  if (currentUser.id === skill.owner_profile_id) {
+    throw new Error('Você não pode solicitar a sua própria habilidade.');
   }
+
   const supabase = requireClient();
+  const { data: subscriptions, error: subscriptionError } = await supabase
+    .from('subscriptions')
+    .select('status, ends_at, trial_ends_at')
+    .eq('profile_id', currentUser.id)
+    .in('status', ['trialing', 'active'])
+    .order('created_at', { ascending: false });
+  if (subscriptionError) throw subscriptionError;
+
+  const nowTs = Date.now();
+  const hasActivePlan = (subscriptions ?? []).some((sub) => {
+    if (sub.status === 'trialing') {
+      return Boolean(sub.trial_ends_at) && new Date(sub.trial_ends_at).getTime() >= nowTs;
+    }
+    return !sub.ends_at || new Date(sub.ends_at).getTime() >= nowTs;
+  });
+
+  if (!hasActivePlan) {
+    throw new Error('Seu plano está inativo. Ative um plano para solicitar habilidades.');
+  }
 
   const { data: request, error: requestError } = await supabase
     .from('exchange_requests')
@@ -171,30 +359,17 @@ export async function createExchangeRequest(currentUser: UserProfile, skill: Ski
     })
     .select('id')
     .single();
-  if (requestError) throw requestError;
-
-  const nextCredits = currentUser.credits - skill.credits;
-  const { error: creditsError } = await supabase
-    .from('profiles')
-    .update({ credits: nextCredits })
-    .eq('id', currentUser.id);
-  if (creditsError) throw creditsError;
-
-  const { error: txError } = await supabase.from('credit_transactions').insert({
-    profile_id: currentUser.id,
-    amount: -skill.credits,
-    kind: 'exchange_spent',
-    reference_exchange_id: request.id,
-    note: `Troca solicitada: ${skill.title}`,
-  });
-  if (txError) throw txError;
+  if (requestError) {
+    if (requestError.code === '23514') {
+      throw new Error('Não foi possível criar a solicitação. Escolha uma habilidade de outro usuário.');
+    }
+    throw requestError;
+  }
 }
 
 export async function handleIncomingRequest(
   request: ExchangeRequest,
   status: RequestStatus,
-  currentProvider: UserProfile,
-  creditsForRequest: number,
 ) {
   const supabase = requireClient();
   const { error: statusError } = await supabase
@@ -202,22 +377,4 @@ export async function handleIncomingRequest(
     .update({ status })
     .eq('id', request.id);
   if (statusError) throw statusError;
-
-  if (status !== 'accepted') return;
-
-  const nextCredits = currentProvider.credits + creditsForRequest;
-  const { error: creditsError } = await supabase
-    .from('profiles')
-    .update({ credits: nextCredits })
-    .eq('id', currentProvider.id);
-  if (creditsError) throw creditsError;
-
-  const { error: txError } = await supabase.from('credit_transactions').insert({
-    profile_id: currentProvider.id,
-    amount: creditsForRequest,
-    kind: 'exchange_earned',
-    reference_exchange_id: request.id,
-    note: 'Créditos recebidos por troca aceita',
-  });
-  if (txError) throw txError;
 }

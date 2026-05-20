@@ -22,6 +22,12 @@ export const ProfileView = ({ user, onUpdate }: { user: any, onUpdate: (u: any) 
         <input className="bg-bg-main border p-3 rounded-xl text-sm" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Nome" />
         <input className="bg-bg-main border p-3 rounded-xl text-sm" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="Email" />
         <input className="bg-bg-main border p-3 rounded-xl text-sm" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="Telefone" />
+        <input className="bg-bg-main border p-3 rounded-xl text-sm" value={formData.phone_whatsapp || ''} onChange={e => setFormData({ ...formData, phone_whatsapp: e.target.value })} placeholder="WhatsApp" />
+        <select className="bg-bg-main border p-3 rounded-xl text-sm" value={formData.role || 'aluno'} onChange={e => setFormData({ ...formData, role: e.target.value })}>
+          <option value="aluno">Aluno</option>
+          <option value="tutor">Tutor</option>
+          <option value="aluno_tutor">Aluno e Tutor</option>
+        </select>
         <input className="bg-bg-main border p-3 rounded-xl text-sm" value={formData.info} onChange={e => setFormData({ ...formData, info: e.target.value })} placeholder="Curso" />
         <textarea className="md:col-span-2 bg-bg-main border p-3 rounded-xl text-sm h-24" value={formData.bio} onChange={e => setFormData({ ...formData, bio: e.target.value })} placeholder="Bio" />
         <button className="md:col-span-2 bg-primary text-white font-bold py-3 rounded-xl">Salvar</button>

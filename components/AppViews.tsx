@@ -123,7 +123,18 @@ export const OnboardingView = ({ currentData, onFinish }: { currentData: any, on
               <div className="grid gap-4">
                 <input placeholder="Nome" className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                 <input placeholder="Email" className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
-                <div className="grid grid-cols-2 gap-4"><input placeholder="Instituição" className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.institution} onChange={e => setFormData({ ...formData, institution: e.target.value })} /> <input placeholder="Curso" className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.course} onChange={e => setFormData({ ...formData, course: e.target.value })} /></div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input placeholder="Instituição" className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.institution} onChange={e => setFormData({ ...formData, institution: e.target.value })} />
+                  <input placeholder="Curso" className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.course} onChange={e => setFormData({ ...formData, course: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input placeholder="WhatsApp" className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.phone_whatsapp || ''} onChange={e => setFormData({ ...formData, phone_whatsapp: e.target.value })} />
+                  <select className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.role || 'aluno'} onChange={e => setFormData({ ...formData, role: e.target.value })}>
+                    <option value="aluno">Aluno</option>
+                    <option value="tutor">Tutor</option>
+                    <option value="aluno_tutor">Aluno e Tutor</option>
+                  </select>
+                </div>
               </div>
               <button onClick={() => setStep(2)} className="w-full bg-primary text-white font-black py-4 rounded-2xl">Continuar</button>
             </div>
@@ -136,6 +147,196 @@ export const OnboardingView = ({ currentData, onFinish }: { currentData: any, on
           )}
         </div>
       </motion.div>
+    </div>
+  );
+};
+
+export const StudentDashboardView = ({
+  stats,
+  trialEndsAt,
+  requests,
+}: {
+  stats: { total: number; inProgress: number; completed: number };
+  trialEndsAt: string | null;
+  requests: Array<{ id: number; title: string; tutor: string; status: string }>;
+}) => {
+  const trialActive = trialEndsAt ? new Date(trialEndsAt) > new Date() : false;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-surface border border-border-main rounded-2xl p-5">
+          <p className="text-xs text-text-muted uppercase">Solicitados</p>
+          <p className="text-3xl font-black">{stats.total}</p>
+        </div>
+        <div className="bg-surface border border-border-main rounded-2xl p-5">
+          <p className="text-xs text-text-muted uppercase">Em andamento</p>
+          <p className="text-3xl font-black">{stats.inProgress}</p>
+        </div>
+        <div className="bg-surface border border-border-main rounded-2xl p-5">
+          <p className="text-xs text-text-muted uppercase">Concluídos</p>
+          <p className="text-3xl font-black">{stats.completed}</p>
+        </div>
+      </div>
+      <div className={`rounded-2xl border p-5 ${trialActive ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
+        <p className="text-sm font-bold">
+          {trialActive ? 'Período de teste ativo' : 'Período de teste expirado'}
+        </p>
+        <p className="text-xs text-text-muted mt-1">
+          {trialEndsAt ? `Válido até ${new Date(trialEndsAt).toLocaleDateString()}` : 'Sem período de teste cadastrado.'}
+        </p>
+      </div>
+      <div className="space-y-3">
+        <h3 className="text-lg font-bold">Solicitações recentes</h3>
+        {requests.length === 0 ? (
+          <p className="text-text-muted">Nenhuma solicitação de serviço ainda.</p>
+        ) : (
+          requests.map((req) => (
+            <div key={req.id} className="bg-surface border border-border-main rounded-xl p-4 flex justify-between">
+              <div>
+                <p className="font-semibold">{req.title}</p>
+                <p className="text-xs text-text-muted">Tutor: {req.tutor}</p>
+              </div>
+              <span className="text-xs uppercase font-bold text-primary">{req.status}</span>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export const TutorDashboardView = ({
+  services,
+  requests,
+  onAction,
+}: {
+  services: Array<{ id: number; title: string; category: string; whatsappUrl: string }>;
+  requests: Array<{ id: number; student: string; title: string; status: string }>;
+  onAction: (id: number, status: 'accepted' | 'scheduled' | 'completed' | 'declined') => Promise<void>;
+}) => (
+  <div className="space-y-8">
+    <div>
+      <h3 className="text-lg font-bold mb-3">Serviços ofertados</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {services.length === 0 ? (
+          <p className="text-text-muted">Você ainda não cadastrou serviços.</p>
+        ) : (
+          services.map((service) => (
+            <div key={service.id} className="bg-surface border border-border-main rounded-xl p-4 space-y-3">
+              <div>
+                <p className="font-semibold">{service.title}</p>
+                <p className="text-xs text-text-muted">{service.category}</p>
+              </div>
+              <a href={service.whatsappUrl} target="_blank" rel="noreferrer" className="inline-block text-xs font-bold text-primary">
+                Enviar mensagem para meu WhatsApp
+              </a>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+    <div>
+      <h3 className="text-lg font-bold mb-3">Solicitações recebidas</h3>
+      <div className="space-y-3">
+        {requests.length === 0 ? (
+          <p className="text-text-muted">Nenhuma solicitação recebida.</p>
+        ) : (
+          requests.map((req) => (
+            <div key={req.id} className="bg-surface border border-border-main rounded-xl p-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold">{req.title}</p>
+                  <p className="text-xs text-text-muted">Aluno: {req.student}</p>
+                </div>
+                <span className="text-[10px] uppercase font-bold text-primary">{req.status}</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
+                <button onClick={() => onAction(req.id, 'accepted')} className="bg-primary text-white text-xs py-2 rounded-lg">Aceitar</button>
+                <button onClick={() => onAction(req.id, 'scheduled')} className="bg-indigo-500 text-white text-xs py-2 rounded-lg">Agendar</button>
+                <button onClick={() => onAction(req.id, 'completed')} className="bg-emerald-600 text-white text-xs py-2 rounded-lg">Concluir</button>
+                <button onClick={() => onAction(req.id, 'declined')} className="bg-slate-200 text-xs py-2 rounded-lg">Recusar</button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+export const PlansView = ({
+  plans,
+  onSubscribe,
+}: {
+  plans: Array<{ id: number; name: string; description: string; price_cents: number; billing_cycle: string }>;
+  onSubscribe: (planId: number) => Promise<void>;
+}) => (
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {plans.map((plan) => (
+      <div key={plan.id} className="bg-surface border border-border-main rounded-2xl p-6">
+        <h3 className="text-xl font-black">{plan.name}</h3>
+        <p className="text-sm text-text-muted mt-2">{plan.description}</p>
+        <p className="text-2xl font-black mt-4">
+          R$ {(plan.price_cents / 100).toFixed(2)} <span className="text-xs font-medium">/{plan.billing_cycle}</span>
+        </p>
+        <button onClick={() => onSubscribe(plan.id)} className="w-full mt-6 bg-primary text-white py-3 rounded-xl font-bold">
+          Assinar plano
+        </button>
+      </div>
+    ))}
+  </div>
+);
+
+export const PaymentMethodsView = ({
+  methods,
+  onSave,
+}: {
+  methods: Array<{ id: number; type: string; provider?: string | null; pix_key?: string | null; last4?: string | null }>;
+  onSave: (payload: { type: 'pix' | 'credito' | 'debito'; provider?: string; pix_key?: string; last4?: string }) => Promise<void>;
+}) => {
+  const [type, setType] = useState<'pix' | 'credito' | 'debito'>('pix');
+  const [provider, setProvider] = useState('');
+  const [pixKey, setPixKey] = useState('');
+  const [last4, setLast4] = useState('');
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-surface border border-border-main rounded-2xl p-6 space-y-4">
+        <h3 className="text-lg font-bold">Adicionar método de pagamento</h3>
+        <select value={type} onChange={(e) => setType(e.target.value as 'pix' | 'credito' | 'debito')} className="w-full border rounded-xl p-3 bg-bg-main">
+          <option value="pix">PIX</option>
+          <option value="credito">Cartão de Crédito</option>
+          <option value="debito">Cartão de Débito</option>
+        </select>
+        {type === 'pix' ? (
+          <input value={pixKey} onChange={(e) => setPixKey(e.target.value)} placeholder="Chave PIX" className="w-full border rounded-xl p-3 bg-bg-main" />
+        ) : (
+          <>
+            <input value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="Bandeira/Operadora" className="w-full border rounded-xl p-3 bg-bg-main" />
+            <input value={last4} onChange={(e) => setLast4(e.target.value)} placeholder="Últimos 4 dígitos" className="w-full border rounded-xl p-3 bg-bg-main" />
+          </>
+        )}
+        <button
+          onClick={() => onSave({ type, provider, pix_key: pixKey, last4 })}
+          className="bg-primary text-white py-3 px-6 rounded-xl font-bold"
+        >
+          Salvar método
+        </button>
+      </div>
+      <div className="space-y-2">
+        <h4 className="font-bold">Métodos salvos</h4>
+        {methods.length === 0 ? (
+          <p className="text-text-muted">Nenhum método cadastrado.</p>
+        ) : (
+          methods.map((method) => (
+            <div key={method.id} className="bg-surface border border-border-main rounded-xl p-4 flex justify-between">
+              <span className="uppercase text-sm font-semibold">{method.type}</span>
+              <span className="text-xs text-text-muted">{method.pix_key || `${method.provider || ''} ****${method.last4 || ''}`}</span>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 };
