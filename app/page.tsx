@@ -122,10 +122,11 @@ export default function TimeDeTrocaApp() {
       history.map((entry) => {
         const relatedRequest = entry.reference_exchange_id ? requestById[entry.reference_exchange_id] : null;
         const relatedSkill = relatedRequest ? skillById[relatedRequest.skill_id] : null;
-        const counterpartId =
-          relatedRequest?.requester_profile_id === user?.id
+        const counterpartId = relatedRequest
+          ? relatedRequest.requester_profile_id === user?.id
             ? relatedRequest.provider_profile_id
-            : relatedRequest?.requester_profile_id;
+            : relatedRequest.requester_profile_id
+          : null;
         const counterpart = counterpartId ? profileById[counterpartId] : null;
 
         return {
