@@ -3,9 +3,22 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowLeftRight } from 'lucide-react';
 import { authenticateAppUser, SESSION_PROFILE_KEY, SESSION_USERNAME_KEY } from '@/lib/auth';
 import { getSupabaseClient } from '@/lib/supabase';
 import type { Plan, ProfileRole } from '@/lib/types';
+
+const ROLE_OPTIONS: { value: ProfileRole; label: string }[] = [
+  { value: 'aluno', label: 'Aluno' },
+  { value: 'tutor', label: 'Instrutor' },
+  { value: 'aluno_tutor', label: 'Aluno e Instrutor' },
+];
+
+const billingCycleLabel: Record<string, string> = {
+  monthly: 'mês',
+  yearly: 'ano',
+  trial: 'teste',
+};
 
 export default function LoginPage() {
   const router = useRouter();
@@ -209,16 +222,26 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-bg-main flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-surface border border-border-main rounded-3xl p-8">
-        <div className="flex gap-2 mb-6">
+    <main className="sistema-shell relative flex min-h-screen items-center justify-center p-6">
+      <div className="infernus-bg" />
+      <div className="infernus-grid" />
+
+      <div className={`infernus-auth-card relative z-10 w-full p-8 ${mode === 'register' ? 'max-w-lg' : 'max-w-md'}`}>
+        <div className="mb-6 flex items-center justify-center gap-2">
+          <div className="infernus-icon-box flex h-10 w-10 items-center justify-center rounded-lg">
+            <ArrowLeftRight className="h-5 w-5 text-[#ff7e00]" />
+          </div>
+          <span className="font-outfit text-lg font-black tracking-tight text-white">SKILLNET</span>
+        </div>
+
+        <div className="mb-6 flex gap-2">
           <button
             type="button"
             onClick={() => {
               setMode('login');
               setError(null);
             }}
-            className={`flex-1 rounded-xl py-2 text-sm font-bold ${mode === 'login' ? 'bg-primary text-white' : 'bg-bg-main border border-border-main text-text-muted'}`}
+            className={`infernus-auth-tab flex-1 py-2.5 text-sm ${mode === 'login' ? 'active' : ''}`}
           >
             Entrar
           </button>
@@ -228,18 +251,18 @@ export default function LoginPage() {
               setMode('register');
               setError(null);
             }}
-            className={`flex-1 rounded-xl py-2 text-sm font-bold ${mode === 'register' ? 'bg-primary text-white' : 'bg-bg-main border border-border-main text-text-muted'}`}
+            className={`infernus-auth-tab flex-1 py-2.5 text-sm ${mode === 'register' ? 'active' : ''}`}
           >
             Cadastrar
           </button>
         </div>
 
-        <h1 className="text-3xl font-black">{mode === 'login' ? 'Entrar no SkillNet' : 'Criar conta'}</h1>
-        <p className="text-text-muted mt-2 text-sm">
+        <h1 className="text-3xl font-black text-white">{mode === 'login' ? 'Entrar no SkillNet' : 'Criar conta'}</h1>
+        <p className="mt-2 text-sm text-[#9ca3af]">
           {mode === 'login' ? 'Use seu e-mail cadastrado e a senha.' : 'Preencha os dados para criar seu acesso.'}
         </p>
 
-        <form className="space-y-4 mt-8" onSubmit={mode === 'login' ? handleLogin : handleRegister}>
+        <form className="mt-8 space-y-4" onSubmit={mode === 'login' ? handleLogin : handleRegister}>
           {mode === 'register' && (
             <>
               <input
@@ -247,7 +270,7 @@ export default function LoginPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Nome"
-                className="w-full bg-bg-main border border-border-main rounded-xl p-3 text-sm"
+                className="infernus-input w-full p-3 text-sm"
                 required
               />
               <input
@@ -255,7 +278,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="E-mail"
-                className="w-full bg-bg-main border border-border-main rounded-xl p-3 text-sm"
+                className="infernus-input w-full p-3 text-sm"
                 required
               />
               <input
@@ -263,7 +286,7 @@ export default function LoginPage() {
                 value={course}
                 onChange={(e) => setCourse(e.target.value)}
                 placeholder="Curso"
-                className="w-full bg-bg-main border border-border-main rounded-xl p-3 text-sm"
+                className="infernus-input w-full p-3 text-sm"
                 required
               />
               <input
@@ -271,32 +294,28 @@ export default function LoginPage() {
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder="WhatsApp"
-                className="w-full bg-bg-main border border-border-main rounded-xl p-3 text-sm"
+                className="infernus-input w-full p-3 text-sm"
                 required
               />
-              <div className="rounded-xl border border-border-main bg-bg-main p-3">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-muted">Você é</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setRole('aluno')}
-                    className={`rounded-lg px-3 py-2 text-sm font-bold transition ${role === 'aluno' ? 'bg-primary text-white' : 'border border-border-main text-text-muted'}`}
-                  >
-                    Aluno
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole('tutor')}
-                    className={`rounded-lg px-3 py-2 text-sm font-bold transition ${role === 'tutor' ? 'bg-primary text-white' : 'border border-border-main text-text-muted'}`}
-                  >
-                    Instrutor
-                  </button>
+              <div className="infernus-inner-panel p-3">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[#cee7f3]">Você é</p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  {ROLE_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setRole(option.value)}
+                      className={`infernus-role-btn px-2 py-2.5 ${role === option.value ? 'active' : ''}`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="rounded-xl border border-border-main bg-bg-main p-3">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-muted">Escolha seu plano</p>
+              <div className="infernus-inner-panel p-3">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[#cee7f3]">Escolha seu plano</p>
                 {plans.length === 0 ? (
-                  <p className="text-xs text-text-muted">Nenhum plano carregado no momento.</p>
+                  <p className="text-xs text-[#9ca3af]">Nenhum plano carregado no momento.</p>
                 ) : (
                   <div className="space-y-2">
                     {plans.map((plan) => {
@@ -306,12 +325,14 @@ export default function LoginPage() {
                           key={plan.id}
                           type="button"
                           onClick={() => setSelectedPlanId(plan.id)}
-                          className={`w-full rounded-lg border p-3 text-left transition ${selected ? 'border-primary bg-primary/5' : 'border-border-main'}`}
+                          className={`infernus-plan-pick w-full p-3 ${selected ? 'active' : ''}`}
                         >
-                          <p className="text-sm font-bold text-text-main">{plan.name}</p>
-                          <p className="text-xs text-text-muted">{plan.description}</p>
-                          <p className="mt-1 text-xs font-semibold text-primary">
-                            {plan.price_cents === 0 ? 'Gratuito' : `R$ ${(plan.price_cents / 100).toFixed(2)} / ${plan.billing_cycle}`}
+                          <p className="text-sm font-bold text-white">{plan.name}</p>
+                          <p className="text-xs text-[#9ca3af]">{plan.description}</p>
+                          <p className="mt-1 text-xs font-semibold text-[#ff7e00]">
+                            {plan.price_cents === 0
+                              ? 'Gratuito'
+                              : `R$ ${(plan.price_cents / 100).toFixed(2)} / ${billingCycleLabel[plan.billing_cycle] ?? plan.billing_cycle}`}
                           </p>
                         </button>
                       );
@@ -328,7 +349,7 @@ export default function LoginPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="E-mail de login"
-              className="w-full bg-bg-main border border-border-main rounded-xl p-3 text-sm"
+              className="infernus-input w-full p-3 text-sm"
               required
             />
           )}
@@ -338,7 +359,7 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Senha"
-            className="w-full bg-bg-main border border-border-main rounded-xl p-3 text-sm"
+            className="infernus-input w-full p-3 text-sm"
             required
           />
 
@@ -348,22 +369,22 @@ export default function LoginPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirmar senha"
-              className="w-full bg-bg-main border border-border-main rounded-xl p-3 text-sm"
+              className="infernus-input w-full p-3 text-sm"
               required
             />
           )}
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-[#ff7e00]">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-white rounded-xl py-3 font-bold disabled:opacity-70"
+            className="btn-infernus-primary w-full rounded-xl py-3 text-sm uppercase tracking-wide disabled:opacity-70"
           >
             {loading ? (mode === 'login' ? 'Entrando...' : 'Cadastrando...') : mode === 'login' ? 'Entrar' : 'Cadastrar e entrar'}
           </button>
         </form>
 
-        <Link href="/" className="block text-center text-sm text-text-muted mt-6">
+        <Link href="/" className="mt-6 block text-center text-sm text-[#9ca3af] transition-colors hover:text-[#cee7f3]">
           Voltar para a landing page
         </Link>
       </div>

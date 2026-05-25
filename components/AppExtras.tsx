@@ -15,7 +15,7 @@ export const ProfileView = ({ user, onUpdate }: { user: any, onUpdate: (u: any) 
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto space-y-8 bg-surface p-8 rounded-3xl border border-border-main relative">
       <AnimatePresence>{showSuccess && <motion.div exit={{ opacity: 0 }} className="absolute top-0 left-0 right-0 bg-emerald-500 text-white text-center py-2 text-xs font-bold">Salvo!</motion.div>}</AnimatePresence>
       <div className="flex flex-col items-center gap-4">
-        <div className="relative"><img src={formData.avatar} className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-xl" /><button onClick={() => (document.getElementById('p-file') as any).click()} className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full"><Camera className="w-4 h-4" /></button></div>
+        <div className="relative"><img src={formData.avatar} className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-xl" /><button type="button" onClick={() => (document.getElementById('p-file') as any).click()} className="btn-infernus-primary absolute bottom-0 right-0 rounded-full p-2"><Camera className="w-4 h-4" /></button></div>
         <input id="p-file" type="file" className="hidden" onChange={handleFile} />
       </div>
       <form onSubmit={save} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -30,21 +30,46 @@ export const ProfileView = ({ user, onUpdate }: { user: any, onUpdate: (u: any) 
         </select>
         <input className="bg-bg-main border p-3 rounded-xl text-sm" value={formData.info} onChange={e => setFormData({ ...formData, info: e.target.value })} placeholder="Curso" />
         <textarea className="md:col-span-2 bg-bg-main border p-3 rounded-xl text-sm h-24" value={formData.bio} onChange={e => setFormData({ ...formData, bio: e.target.value })} placeholder="Bio" />
-        <button className="md:col-span-2 bg-primary text-white font-bold py-3 rounded-xl">Salvar</button>
+        <button type="submit" className="btn-infernus-primary md:col-span-2 rounded-xl py-3 font-bold">Salvar</button>
       </form>
     </motion.div>
   );
 };
 
-export const MembersView = ({ members, onSelectMember }: { members: any[], onSelectMember: (p: any) => void }) => (
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-    {members.map((p) => (
-      <div key={p.name} onClick={() => onSelectMember(p)} className="bg-surface border p-6 rounded-[2rem] text-center cursor-pointer hover:border-primary transition-all">
-        <img src={p.avatar} className="w-20 h-20 rounded-full mx-auto mb-4 border-2 border-white shadow-lg" />
-        <h4 className="font-bold text-text-main">{p.name}</h4>
-        <p className="text-[10px] text-primary font-bold uppercase mt-1">Visitante • 8º Período</p>
-      </div>
-    ))}
+const ROLE_LABELS: Record<string, string> = {
+  aluno: 'Aluno',
+  tutor: 'Tutor',
+  aluno_tutor: 'Aluno e Tutor',
+};
+
+function memberSubtitle(member: { role?: string; period?: string; info?: string; course?: string }) {
+  const role = ROLE_LABELS[member.role ?? ''] ?? 'Membro';
+  const detail = member.period || member.info || member.course || '';
+  return detail ? `${role} • ${detail}` : role;
+}
+
+export const MembersView = ({ members, onSelectMember }: { members: any[]; onSelectMember: (p: any) => void }) => (
+  <div className="animate-in fade-in duration-500">
+    <div className="infernus-member-grid grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {members.length === 0 ? (
+        <p className="col-span-full py-12 text-center text-[#9ca3af]">Nenhum membro cadastrado ainda.</p>
+      ) : (
+        members.map((p) => (
+          <button
+            key={p.id ?? p.name}
+            type="button"
+            onClick={() => onSelectMember(p)}
+            className="infernus-member-card flex cursor-pointer flex-col items-center p-6 text-center"
+          >
+            <div className="mb-4 h-20 w-20 overflow-hidden rounded-full border-2 border-white/25">
+              <img src={p.avatar} alt={p.name} className="h-full w-full object-cover" />
+            </div>
+            <h4 className="font-bold text-white">{p.name}</h4>
+            <p className="mt-2 text-[10px] font-bold uppercase tracking-wider text-[#cee7f3]">{memberSubtitle(p)}</p>
+          </button>
+        ))
+      )}
+    </div>
   </div>
 );
 
@@ -70,7 +95,7 @@ export const IncomingRequestsView = ({ requests, onAction }: { requests: any[], 
           <img src={r.fromAvatar} className="w-14 h-14 rounded-full border-2 border-white shadow-md" />
           <div><h4 className="font-bold text-text-main">{r.from}</h4><p className="text-sm italic">&quot;{r.title}&quot;</p></div>
         </div>
-        <div className="grid grid-cols-2 gap-3"><button onClick={() => onAction(r.id, 'accepted')} className="bg-primary text-white text-[10px] font-bold py-3 rounded-xl uppercase">Aceitar</button><button onClick={() => onAction(r.id, 'declined')} className="bg-bg-main text-text-muted text-[10px] font-bold py-3 rounded-xl uppercase">Recusar</button></div>
+        <div className="grid grid-cols-2 gap-3"><button type="button" onClick={() => onAction(r.id, 'accepted')} className="btn-infernus-primary text-[10px] font-bold py-3 rounded-xl uppercase">Aceitar</button><button type="button" onClick={() => onAction(r.id, 'declined')} className="btn-infernus-outline text-[10px] font-bold py-3 rounded-xl uppercase">Recusar</button></div>
       </div>
     ))}
   </div>

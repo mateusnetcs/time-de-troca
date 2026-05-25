@@ -3,9 +3,9 @@
 import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
-import { Search, Award } from 'lucide-react';
+import { Search, Award, LayoutGrid, UserPlus } from 'lucide-react';
 import { CATEGORIES } from '@/lib/data';
-import { Sidebar, Header } from '@/components/AppLayout';
+import { SistemaNavbar, PlanBanner } from '@/components/AppLayout';
 import {
   SkillCard,
   MySkillsView,
@@ -17,7 +17,7 @@ import {
   PaymentMethodsView,
 } from '@/components/AppViews';
 import { ProfileView, MembersView, RequestsView, IncomingRequestsView } from '@/components/AppExtras';
-import { ChatOverlay, ExchangeModal } from '@/components/AppModals';
+import { ChatOverlay, ExchangeModal, ProfileOnboardingModal } from '@/components/AppModals';
 import { SuccessOverlay, QuickStats, StudentProfileOverlay } from '@/components/Misc';
 import {
   completeOnboarding,
@@ -43,6 +43,14 @@ import {
   updateServiceRequestStatus,
 } from '@/lib/supabase-data';
 import { SESSION_PROFILE_KEY, SESSION_USERNAME_KEY } from '@/lib/auth';
+import {
+  type ActiveRole,
+  clearActiveRole,
+  defaultTabForRole,
+  isTabAllowedForRole,
+  persistActiveRole,
+  resolveActiveRole,
+} from '@/lib/role-session';
 import type { CreditTransaction, ExchangeRequest, PaymentMethod, Plan, ServiceRequest, Skill, Subscription, UserProfile } from '@/lib/types';
 
 export default function SistemaPage() {
@@ -67,6 +75,8 @@ export default function SistemaPage() {
   const [studentServiceRequests, setStudentServiceRequests] = useState<ServiceRequest[]>([]);
   const [tutorServiceRequests, setTutorServiceRequests] = useState<ServiceRequest[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [activeRole, setActiveRole] = useState<ActiveRole>('aluno');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nowTs, setNowTs] = useState(0);
@@ -127,6 +137,12 @@ export default function SistemaPage() {
   }, [loadData]);
 
   useEffect(() => {
+    if (!user) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActiveRole(resolveActiveRole(user.role, user.id));
+  }, [user?.id, user?.role]);
+
+  useEffect(() => {
     const updateNow = () => setNowTs(Date.now());
     updateNow();
     const timer = setInterval(updateNow, 60 * 1000);
@@ -169,8 +185,21 @@ export default function SistemaPage() {
     return false;
   }, [currentSubscription, nowTs]);
 
+  const handleRoleChange = (role: ActiveRole) => {
+    if (!user) return;
+    persistActiveRole(user.id, role);
+    setActiveRole(role);
+    if (!isTabAllowedForRole(activeTab, role)) {
+      setActiveTab(defaultTabForRole(role));
+    }
+  };
+
   const handleExchange = async () => {
     if (!user || !exchanging) return;
+    if (activeRole !== 'aluno') {
+      setError('Alterne para o modo Aluno para solicitar habilidades.');
+      return;
+    }
     try {
       setError(null);
       await createExchangeRequest(user, exchanging as Skill);
@@ -184,89 +213,257 @@ export default function SistemaPage() {
   };
 
   const handleLogout = () => {
+    if (activeUserId) clearActiveRole(activeUserId);
     localStorage.removeItem(SESSION_PROFILE_KEY);
     localStorage.removeItem(SESSION_USERNAME_KEY);
     router.push('/login');
   };
 
   if (!isMounted || (isLoading && !user)) {
-    return <div className="min-h-screen flex items-center justify-center bg-bg-main"><p className="text-text-muted">Carregando sistema...</p></div>;
+    return (
+      <div className="sistema-shell flex min-h-screen items-center justify-center">
+        <div className="infernus-bg" />
+        <p className="relative z-10 text-accent">Carregando sistema...</p>
+      </div>
+    );
   }
 
   if (!user) {
-    return <div className="min-h-screen flex items-center justify-center bg-bg-main"><p className="text-text-muted">Usuário não encontrado.</p></div>;
+    return (
+      <div className="sistema-shell flex min-h-screen items-center justify-center">
+        <div className="infernus-bg" />
+        <p className="relative z-10 text-text-muted">Usuário não encontrado.</p>
+      </div>
+    );
   }
 
+  const daysLeft = currentSubscription
+    ? Math.max(
+        0,
+        Math.ceil(
+          ((currentSubscription.status === 'trialing'
+            ? new Date(currentSubscription.trial_ends_at ?? nowTs).getTime()
+            : new Date(currentSubscription.ends_at ?? nowTs).getTime()) - nowTs)
+          / (1000 * 60 * 60 * 24),
+        ),
+      )
+    : 0;
+
   return (
-    <div className="flex bg-bg-main min-h-screen font-sans text-text-main selection:bg-primary/10">
-      <Sidebar activeTab={activeTab} user={user} onTabChange={setActiveTab} />
-      <main className="flex-1 p-4 md:p-12 overflow-y-auto max-h-screen custom-scrollbar">
+    <div className={`sistema-shell sistema-role-${activeRole} relative min-h-screen font-sans`} data-active-role={activeRole}>
+      <div className="infernus-bg" />
+      <div className="infernus-grid" />
+
+      <SistemaNavbar
+        activeTab={activeTab}
+        user={user}
+        activeRole={activeRole}
+        planActive={isCurrentPlanActive}
+        onTabChange={setActiveTab}
+        onRoleChange={handleRoleChange}
+        onLogout={handleLogout}
+        onOpenProfile={() => setProfileModalOpen(true)}
+      />
+
+      <main className="custom-scrollbar relative z-10 mx-auto min-h-screen max-w-[1400px] px-4 pb-16 pt-6 md:px-8">
         {currentSubscription && currentPlan && (
-          <div className={`sticky top-2 z-30 mb-6 rounded-2xl border p-4 ${currentSubscription.status === 'trialing' ? 'border-emerald-300 bg-emerald-50' : 'border-primary/30 bg-primary/5'}`}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-black text-text-main">
-                  {currentSubscription.status === 'trialing' ? 'Período de Teste Ativo' : `Plano ${currentPlan.name} Ativo`}
-                </p>
-                <p className="text-xs text-text-muted mt-1">
-                  {currentSubscription.status === 'trialing'
-                    ? `Período grátis até ${currentSubscription.trial_ends_at ? new Date(currentSubscription.trial_ends_at).toLocaleDateString() : 'data não informada'}`
-                    : `Renovação prevista para ${currentSubscription.ends_at ? new Date(currentSubscription.ends_at).toLocaleDateString() : 'sem data definida'}`}
-                </p>
-              </div>
-              <div className="rounded-xl border border-border-main bg-white px-4 py-2 text-center min-w-[92px]">
-                <p className="text-3xl leading-none font-black text-primary">
-                  {Math.max(
-                    0,
-                    Math.ceil(
-                      ((currentSubscription.status === 'trialing'
-                        ? new Date(currentSubscription.trial_ends_at ?? nowTs).getTime()
-                        : new Date(currentSubscription.ends_at ?? nowTs).getTime()) - nowTs)
-                      / (1000 * 60 * 60 * 24),
-                    ),
-                  )}
-                </p>
-                <p className="text-[10px] font-bold uppercase text-text-muted">
-                  dias restantes
-                </p>
-              </div>
-            </div>
+          <PlanBanner
+            planName={currentPlan.name}
+            isTrialing={currentSubscription.status === 'trialing'}
+            endLabel={
+              currentSubscription.status === 'trialing'
+                ? `Período grátis até ${currentSubscription.trial_ends_at ? new Date(currentSubscription.trial_ends_at).toLocaleDateString() : 'data não informada'}`
+                : `Renovação prevista para ${currentSubscription.ends_at ? new Date(currentSubscription.ends_at).toLocaleDateString() : 'sem data definida'}`
+            }
+            daysLeft={daysLeft}
+          />
+        )}
+
+        {error && (
+          <div className="mb-6 rounded-xl border border-accent/50 bg-black/60 px-4 py-3 text-sm text-accent">
+            {error}
           </div>
         )}
-        <Header
-          user={user}
-          planActive={isCurrentPlanActive}
-          onOpenChat={setActiveChat}
-          onLogout={handleLogout}
-        />
-
-        {error && <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
         {activeTab === 'Início' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h1 className="text-4xl font-black mb-2 tracking-tight">O que você quer aprender hoje?</h1>
-            <p className="text-text-muted mb-8 text-lg font-medium">Troque suas habilidades e ajude um colega.</p>
+          <div className="animate-in fade-in duration-700">
+            <section className="mb-12 flex flex-col items-center px-2 text-center md:px-8">
+              <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/50 bg-black/60 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                ⚡ Seu pacto com o aprendizado
+              </p>
+              <h1 className="font-outfit infernus-title-glow mb-4 max-w-4xl text-4xl font-black uppercase leading-none tracking-tight text-white md:text-6xl lg:text-7xl">
+                SkillNet
+              </h1>
+              <p className="mb-2 max-w-xl text-lg text-text-muted md:text-xl">
+                {activeRole === 'aluno'
+                  ? 'O que você quer aprender hoje?'
+                  : 'O que você quer ensinar hoje?'}
+              </p>
+              <p className="mb-10 max-w-lg text-sm text-primary-light">
+                {activeRole === 'aluno'
+                  ? 'Troque suas habilidades e ajude um colega.'
+                  : 'Gerencie suas habilidades e atenda solicitações dos alunos.'}
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-4">
+                {activeRole === 'aluno' ? (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('Habilidades Disponíveis')}
+                    className="btn-infernus-primary flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-bold"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                    Ver Habilidades
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('Minhas Habilidades')}
+                    className="btn-infernus-primary flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-bold"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                    Minhas Habilidades
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    activeRole === 'aluno'
+                      ? setActiveTab('Painel do Aluno')
+                      : setActiveTab('Painel do Tutor')
+                  }
+                  className="btn-infernus-outline flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-bold"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  {activeRole === 'aluno' ? 'Painel do Aluno' : 'Painel do Instrutor'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => (user.onboarded ? setProfileModalOpen(true) : setActiveTab('Cadastro'))}
+                  className="btn-infernus-outline flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-bold"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  {user.onboarded ? 'Meu Perfil' : 'Completar Cadastro'}
+                </button>
+              </div>
+            </section>
+
             <QuickStats />
-            <div className="flex items-center gap-4 mb-4"><Search className="w-5 h-5 text-text-muted" /><span className="text-sm font-bold text-text-muted uppercase">Destaques</span></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {availableSkillCards.slice(0, 3).map(s => <SkillCard key={s.id} skill={s} onExchange={setExchanging} onOpenChat={setActiveChat} onSelectStudent={setSelectedStudent} />)}
-            </div>
-            {!user.onboarded && <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-12 bg-indigo-600 rounded-[2.5rem] p-10 text-white flex flex-col md:flex-row items-center gap-8 shadow-2xl"><div className="bg-white/20 p-6 rounded-3xl"><Award className="w-12 h-12" /></div><div className="flex-1"><h3 className="text-2xl font-black mb-2 uppercase">Ganhe seu 1º Crédito!</h3><p className="opacity-80 font-medium">Complete seu cadastro para começar a aprender agora mesmo.</p></div><button onClick={() => setActiveTab('Cadastro')} className="bg-white text-indigo-600 font-black px-10 py-5 rounded-2xl">Finalizar Cadastro</button></motion.div>}
+
+            {activeRole === 'aluno' ? (
+              <>
+                <section className="mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
+                  <Search className="h-5 w-5 text-accent" />
+                  <span className="text-sm font-bold uppercase tracking-[0.25em] text-white">Destaques</span>
+                </section>
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                  {availableSkillCards.slice(0, 3).map((s) => (
+                    <SkillCard
+                      key={s.id}
+                      skill={s}
+                      onExchange={setExchanging}
+                      onOpenChat={setActiveChat}
+                      onSelectStudent={setSelectedStudent}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <section className="mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
+                  <Search className="h-5 w-5 text-accent" />
+                  <span className="text-sm font-bold uppercase tracking-[0.25em] text-white">Suas habilidades publicadas</span>
+                </section>
+                {mySkills.length === 0 ? (
+                  <p className="text-center text-[#9ca3af]">Publique sua primeira habilidade em Minhas Habilidades.</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                    {mySkills.slice(0, 3).map((s) => (
+                      <SkillCard
+                        key={s.id}
+                        skill={s}
+                        onExchange={() => setError('No modo Instrutor, use Solicitações para ver pedidos dos alunos.')}
+                        onOpenChat={setActiveChat}
+                        onSelectStudent={setSelectedStudent}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 
-        {activeTab === 'Habilidades Disponíveis' && <div className="space-y-8"><div className="flex flex-col md:flex-row md:items-center justify-between gap-6"><h2 className="text-3xl font-black">Habilidades</h2><div className="flex flex-wrap gap-2">{CATEGORIES.map(c => <button key={c} onClick={() => setFilter(c)} className={`px-4 py-1.5 rounded-full text-xs font-bold ${filter === c ? 'bg-primary text-white' : 'bg-surface border border-border-main text-text-muted'}`}>{c}</button>)}</div></div><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{filteredSkills.map(s => <SkillCard key={s.id} skill={s} onExchange={setExchanging} onOpenChat={setActiveChat} onSelectStudent={setSelectedStudent} />)}</div></div>}
-        {activeTab === 'Painel do Aluno' && <StudentDashboardView stats={studentStats} trialEndsAt={user.trial_ends_at} requests={studentRequestCards} />}
-        {activeTab === 'Painel do Tutor' && <TutorDashboardView services={tutorServices} requests={tutorRequestCards} onAction={(id, status) => updateServiceRequestStatus(id, status).then(loadData)} />}
-        {activeTab === 'Planos' && <PlansView plans={plans} onSubscribe={(planId) => { const plan = plans.find((item) => item.id === planId); if (!plan) return Promise.resolve(); return subscribeToPlan(user.id, plan, paymentMethods[0]?.type ?? 'pix').then(loadData); }} />}
-        {activeTab === 'Pagamentos' && <PaymentMethodsView methods={paymentMethods} onSave={(payload) => savePaymentMethod(user.id, payload).then(loadData)} />}
-        {activeTab === 'Membros' && <MembersView members={profiles} onSelectMember={setSelectedStudent} />}
-        {activeTab === 'Solicitações' && <IncomingRequestsView requests={incomingRequestCards} onAction={(id, status) => { const req = incomingRequests.find((r) => r.id === id); if (!req) return Promise.resolve(); return handleIncomingRequest(req, status as any).then(loadData); }} />}
-        {activeTab === 'Meus Pedidos' && <RequestsView requests={outgoingRequestCards} />}
-        {activeTab === 'Histórico' && <HistoryView history={historyCards} />}
-        {activeTab === 'Minhas Habilidades' && <MySkillsView mySkills={mySkills} onPublish={(payload) => createSkill(user.id, { ...payload, credits: 1 }).then(loadData)} onDelete={(id) => removeSkill(id, user.id).then(loadData)} />}
-        {activeTab === 'Meu Perfil' && <ProfileView user={user} onUpdate={(payload) => updateProfile(user.id, payload).then(loadData)} />}
-        {activeTab === 'Cadastro' && <OnboardingView currentData={user} onFinish={(data) => completeOnboarding(user, data).then(loadData)} />}
+        {activeTab === 'Habilidades Disponíveis' && activeRole === 'aluno' && (
+          <div className="space-y-8">
+            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+              <h2 className="font-outfit text-3xl font-black uppercase text-white infernus-title-glow">Habilidades</h2>
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map(c => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setFilter(c)}
+                    className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
+                      filter === c ? 'btn-infernus-primary' : 'btn-infernus-outline'
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {filteredSkills.map(s => (
+                <SkillCard key={s.id} skill={s} onExchange={setExchanging} onOpenChat={setActiveChat} onSelectStudent={setSelectedStudent} />
+              ))}
+            </div>
+          </div>
+        )}
+        {activeTab !== 'Início' && activeTab !== 'Habilidades Disponíveis' && (
+          <div className="infernus-card rounded-2xl p-6 md:p-8">
+            {activeTab === 'Painel do Aluno' && activeRole === 'aluno' && (
+              <StudentDashboardView stats={studentStats} trialEndsAt={user.trial_ends_at} requests={studentRequestCards} />
+            )}
+            {activeTab === 'Painel do Tutor' && activeRole === 'tutor' && (
+              <TutorDashboardView
+                services={tutorServices}
+                requests={tutorRequestCards}
+                onAction={(id, status) => updateServiceRequestStatus(id, status).then(loadData)}
+              />
+            )}
+            {activeTab === 'Planos' && <PlansView plans={plans} onSubscribe={(planId) => { const plan = plans.find((item) => item.id === planId); if (!plan) return Promise.resolve(); return subscribeToPlan(user.id, plan, paymentMethods[0]?.type ?? 'pix').then(loadData); }} />}
+            {activeTab === 'Pagamentos' && <PaymentMethodsView methods={paymentMethods} onSave={(payload) => savePaymentMethod(user.id, payload).then(loadData)} />}
+            {activeTab === 'Membros' && <MembersView members={profiles} onSelectMember={setSelectedStudent} />}
+            {activeTab === 'Solicitações' && activeRole === 'tutor' && (
+              <IncomingRequestsView
+                requests={incomingRequestCards}
+                onAction={(id, status) => {
+                  const req = incomingRequests.find((r) => r.id === id);
+                  if (!req) return Promise.resolve();
+                  return handleIncomingRequest(req, status as any).then(loadData);
+                }}
+              />
+            )}
+            {activeTab === 'Meus Pedidos' && activeRole === 'aluno' && <RequestsView requests={outgoingRequestCards} />}
+            {activeTab === 'Histórico' && <HistoryView history={historyCards} />}
+            {activeTab === 'Minhas Habilidades' && activeRole === 'tutor' && (
+              <MySkillsView
+                mySkills={mySkills}
+                onPublish={(payload) => createSkill(user.id, { ...payload, credits: 1 }).then(loadData)}
+                onDelete={(id) => removeSkill(id, user.id).then(loadData)}
+              />
+            )}
+            {activeTab === 'Meu Perfil' && <ProfileView user={user} onUpdate={(payload) => updateProfile(user.id, payload).then(loadData)} />}
+            {activeTab === 'Cadastro' && (
+              <div className="flex justify-center py-2">
+                <OnboardingView
+                  currentData={user}
+                  onFinish={(data) => completeOnboarding(user, data).then(loadData)}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       <AnimatePresence>
@@ -274,6 +471,14 @@ export default function SistemaPage() {
         {success && <SuccessOverlay isOpen={success} onClose={() => setSuccess(false)} />}
         {activeChat && <ChatOverlay isOpen={!!activeChat} onClose={() => setActiveChat(null)} targetStudent={activeChat} />}
         {selectedStudent && <StudentProfileOverlay profile={selectedStudent} onClose={() => setSelectedStudent(null)} />}
+        {profileModalOpen && (
+          <ProfileOnboardingModal
+            isOpen={profileModalOpen}
+            onClose={() => setProfileModalOpen(false)}
+            user={user}
+            onFinish={(data) => completeOnboarding(user, data).then(loadData)}
+          />
+        )}
       </AnimatePresence>
     </div>
   );

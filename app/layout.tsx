@@ -13,7 +13,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: 'Time de Troca - Gestão da Inovação',
+  title: 'SkillNet - Gestão da Inovação',
   description: 'App para troca de habilidades entre alunos.',
 };
 

@@ -1,32 +1,69 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Plus, ChevronRight, Award, 
-  ArrowLeftRight, Camera, User
+  ArrowLeftRight, Camera, User, X, Sparkles, UserCircle
 } from 'lucide-react';
 import { CATEGORIES } from '@/lib/data';
+import type { ProfileRole } from '@/lib/types';
+
+const ONBOARDING_ROLE_OPTIONS: { value: ProfileRole; label: string }[] = [
+  { value: 'aluno', label: 'Aluno' },
+  { value: 'tutor', label: 'Instrutor' },
+  { value: 'aluno_tutor', label: 'Aluno e Instrutor' },
+];
+
+function normalizeOnboardingData(data: Record<string, unknown>) {
+  return {
+    ...data,
+    skillsOffer: (data.skills_offer as string) ?? (data.skillsOffer as string) ?? '',
+    skillsSeek: (data.skills_seek as string) ?? (data.skillsSeek as string) ?? '',
+    period: (data.period as string) ?? '',
+    institution: (data.institution as string) ?? '',
+    course: (data.course as string) ?? '',
+    phone_whatsapp: (data.phone_whatsapp as string) ?? (data.phone as string) ?? '',
+    role: (data.role as ProfileRole) ?? 'aluno',
+  };
+}
 
 export const SkillCard = ({ skill, onExchange, onOpenChat, onSelectStudent }: { 
   skill: any, onExchange: (s: any) => void, onOpenChat: (s: string) => void, onSelectStudent: (p: any) => void
 }) => (
-  <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-surface rounded-2xl border border-border-main p-5 card-shadow group transition-all">
-    <div className="flex items-start justify-between mb-4">
-      <span className="bg-primary-light text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">{skill.category}</span>
-      <button className="text-text-muted hover:text-primary transition-colors"><Plus className="w-4 h-4" /></button>
+  <motion.div
+    layout
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    className="skill-card-infernus group p-5 transition-all"
+  >
+    <div className="mb-4 flex items-start justify-between">
+      <span className="rounded-md border border-[#ff7e00] bg-transparent px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#ff7e00]">
+        {skill.category}
+      </span>
+      <button type="button" className="text-[#6b7280] transition-colors hover:text-[#ff7e00]">
+        <Plus className="h-4 w-4" />
+      </button>
     </div>
-    <h3 className="font-bold text-text-main mb-2 leading-tight">{skill.title}</h3>
-    <p className="text-sm text-text-muted line-clamp-2 h-10 mb-6 leading-relaxed">Ajudo você a dominar {skill.title.toLowerCase()} com uma abordagem prática para o trabalho final.</p>
-    <div className="flex items-center justify-between pt-4 border-t border-border-main">
-      <button onClick={() => onSelectStudent(skill.owner)} className="flex items-center gap-2 group/author active:scale-95 transition-transform">
-        <div className="w-6 h-6 rounded-full bg-slate-100 border border-border-main overflow-hidden group-hover/author:ring-2 group-hover/author:ring-primary/30 transition-all">
-          <img src={skill.owner?.avatar} alt={skill.student} className="w-full h-full object-cover" />
+    <h3 className="mb-2 text-lg font-bold leading-tight text-white">{skill.title}</h3>
+    <p className="mb-6 line-clamp-2 h-10 text-sm leading-relaxed text-[#9ca3af]">
+      Ajudo você a dominar {skill.title.toLowerCase()} com uma abordagem prática para o trabalho final.
+    </p>
+    <div className="flex items-center justify-between border-t border-[#374151] pt-4">
+      <button type="button" onClick={() => onSelectStudent(skill.owner)} className="group/author flex items-center gap-2 transition-transform active:scale-95">
+        <div className="h-7 w-7 overflow-hidden rounded-full border border-[#374151]">
+          <img src={skill.owner?.avatar} alt={skill.student} className="h-full w-full object-cover" />
         </div>
-        <span className="text-xs font-semibold text-text-main group-hover/author:text-primary transition-colors">{skill.student}</span>
+        <span className="text-sm font-medium text-[#9ca3af] transition-colors group-hover/author:text-[#cee7f3]">{skill.student}</span>
       </button>
       <div className="flex items-center gap-3">
-        <span className="font-bold text-text-main text-sm">{skill.credits} T-C</span>
-        <button onClick={() => onExchange(skill)} className="bg-primary text-white p-1.5 rounded-lg hover:bg-primary/90 transition-all active:scale-90"><ChevronRight className="w-4 h-4" /></button>
+        <span className="text-sm font-bold text-[#ff7e00]">{skill.credits} T-C</span>
+        <button
+          type="button"
+          onClick={() => onExchange(skill)}
+          className="skill-card-action flex h-9 w-9 items-center justify-center text-white transition-transform active:scale-90"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
     </div>
   </motion.div>
@@ -64,7 +101,7 @@ export const MySkillsView = ({
           </select>
           <textarea value={newSkill.description} onChange={(e) => setNewSkill({ ...newSkill, description: e.target.value })} placeholder="Descrição" className="md:col-span-2 bg-bg-main border border-border-main rounded-xl px-4 py-3 text-sm h-24 focus:outline-none focus:ring-2 focus:ring-primary/20" />
         </div>
-        <button onClick={handlePublish} className="mt-8 bg-primary text-white font-bold px-8 py-3 rounded-xl hover:shadow-lg active:scale-95 transition-all">Publicar</button>
+        <button type="button" onClick={handlePublish} className="btn-infernus-primary mt-8 rounded-xl px-8 py-3 font-bold active:scale-95 transition-all">Publicar</button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {mySkills.map(s => (
@@ -98,56 +135,256 @@ export const HistoryView = ({ history }: { history: any[] }) => (
   </motion.div>
 );
 
-export const OnboardingView = ({ currentData, onFinish }: { currentData: any, onFinish: (data: any) => void }) => {
+export const OnboardingView = ({
+  currentData,
+  onFinish,
+  onClose,
+}: {
+  currentData: Record<string, unknown>;
+  onFinish: (data: Record<string, unknown>) => void;
+  onClose?: () => void;
+}) => {
+  const isEditing = !!currentData?.onboarded;
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState(currentData);
-  const handleFileUpload = (e: any) => {
+  const [formData, setFormData] = useState(() => normalizeOnboardingData(currentData));
+
+  useEffect(() => {
+    setFormData(normalizeOnboardingData(currentData));
+    setStep(1);
+  }, [currentData]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const r = new FileReader(); r.onloadend = () => setFormData({ ...formData, avatar: r.result as string }); r.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setFormData({ ...formData, avatar: reader.result as string });
+      reader.readAsDataURL(file);
     }
   };
+
+  const finish = () => {
+    onFinish({
+      ...formData,
+      info: `${formData.course} - ${formData.period || '-'}º Período`,
+      onboarded: true,
+    });
+  };
+
   return (
-    <div className="flex items-center justify-center py-4">
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white w-full max-w-4xl rounded-[3rem] border border-border-main shadow-xl flex overflow-hidden min-h-[600px]">
-        <div className="bg-primary p-12 text-white md:w-1/3 flex flex-col justify-between">
-          <div><h2 className="text-3xl font-black">Comece sua jornada.</h2><p className="mt-4 opacity-80">Troque habilidades e cresça.</p></div>
-          <div className="space-y-4">
-            {[1, 2].map(s => <div key={s} className={`flex items-center gap-3 ${step === s ? 'text-white' : 'text-white/30'}`}><div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold ${step === s ? 'bg-white text-primary border-white' : 'border-white/30'}`}>{s}</div><span className="text-xs font-black uppercase tracking-widest">{s === 1 ? 'Perfil' : 'Habilidades'}</span></div>)}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="infernus-onboarding flex w-full flex-col overflow-hidden rounded-[2rem] border border-[#ff7e00] shadow-[0_0_48px_rgba(255,126,0,0.2)] md:min-h-[580px] md:flex-row"
+    >
+      <div className="infernus-onboarding-sidebar relative flex flex-col justify-between overflow-hidden p-8 text-white md:w-[36%] md:p-10">
+        <div className="infernus-onboarding-sidebar-glow pointer-events-none" aria-hidden />
+
+        <div className="relative z-10">
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="mb-5 flex items-center gap-1 rounded-full border border-white/15 px-3 py-1.5 text-xs font-bold text-[#cee7f3] transition-colors hover:border-[#ff7e00]/50 hover:text-white md:hidden"
+            >
+              <X className="h-3.5 w-3.5" /> Fechar
+            </button>
+          )}
+
+          <div className="infernus-icon-box mb-6 inline-flex items-center gap-2 rounded-full px-3 py-1.5">
+            <ArrowLeftRight className="h-3.5 w-3.5 text-[#ff7e00]" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">SkillNet</span>
+          </div>
+
+          <h2 className="font-outfit infernus-title-glow text-2xl font-black leading-tight text-white md:text-[1.75rem]">
+            {isEditing ? 'Seu perfil SkillNet' : 'Comece sua jornada.'}
+          </h2>
+          <p className="mt-3 max-w-[220px] text-sm leading-relaxed text-[#9ca3af]">
+            {isEditing ? 'Atualize foto, dados e habilidades.' : 'Troque habilidades e cresça com a comunidade.'}
+          </p>
+        </div>
+
+        <div className="relative z-10 my-8 hidden flex-col gap-3 md:flex">
+          <div className="infernus-onboarding-tip rounded-xl p-4">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#ff7e00]">Dica</p>
+            <p className="mt-1 text-xs leading-relaxed text-[#9ca3af]">
+              {step === 1
+                ? 'Uma foto e dados completos aumentam a confiança nas trocas.'
+                : 'Descreva o que você ensina e o que quer aprender.'}
+            </p>
           </div>
         </div>
-        <div className="p-10 md:w-2/3">
-          {step === 1 ? (
-            <div className="space-y-6">
-              <div className="flex justify-center"><div className="relative"><div className="w-28 h-28 rounded-full bg-slate-100 border-2 overflow-hidden flex items-center justify-center">{formData.avatar ? <img src={formData.avatar} alt="P" className="w-full h-full object-cover" /> : <User className="w-12 h-12 text-text-muted" />}</div><label className="absolute -bottom-1 -right-1 bg-primary text-white p-2.5 rounded-full cursor-pointer"><Camera className="w-4 h-4" /><input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} /></label></div></div>
-              <div className="grid gap-4">
-                <input placeholder="Nome" className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
-                <input placeholder="Email" className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
-                <div className="grid grid-cols-2 gap-4">
-                  <input placeholder="Instituição" className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.institution} onChange={e => setFormData({ ...formData, institution: e.target.value })} />
-                  <input placeholder="Curso" className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.course} onChange={e => setFormData({ ...formData, course: e.target.value })} />
+
+        <div className="relative z-10">
+          <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.25em] text-[#9ca3af]">Progresso</p>
+          <div className="mb-2 h-1 overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#ff7e00] to-[#ffb347] transition-all duration-500"
+              style={{ width: step === 1 ? '50%' : '100%' }}
+            />
+          </div>
+          <div className="space-y-3">
+            {[
+              { n: 1, label: 'Perfil', icon: UserCircle, hint: 'Dados pessoais' },
+              { n: 2, label: 'Habilidades', icon: Sparkles, hint: 'Ensina e aprende' },
+            ].map(({ n, label, icon: Icon, hint }) => {
+              const active = step === n;
+              const done = step > n;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setStep(n)}
+                  className={`infernus-onboarding-step flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left transition-all ${
+                    active ? 'infernus-onboarding-step-active' : done ? 'border-white/20 bg-white/5' : 'border-transparent hover:border-white/15 hover:bg-white/5'
+                  }`}
+                >
+                  <div
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
+                      active
+                        ? 'border-[#ff7e00] bg-[#ff7e00] text-white shadow-[0_0_20px_rgba(255,126,0,0.5)]'
+                        : done
+                          ? 'border-[#ff7e00]/40 bg-[#ff7e00]/15 text-[#ff7e00]'
+                          : 'border-white/15 bg-[#0a0a0a] text-[#6b7280]'
+                    }`}
+                  >
+                    {done && !active ? (
+                      <span className="text-sm font-black">✓</span>
+                    ) : (
+                      <Icon className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <span className={`block text-xs font-black uppercase tracking-widest ${active ? 'text-white' : 'text-white/45'}`}>
+                      {label}
+                    </span>
+                    <span className={`block text-[10px] ${active ? 'text-[#ff7e00]' : 'text-[#6b7280]'}`}>{hint}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className="relative flex-1 bg-[#050505] p-6 md:p-10">
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-4 top-4 hidden rounded-full border border-white/20 p-2 text-white transition-colors hover:border-[#ff7e00] md:block"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
+
+        {step === 1 ? (
+          <div className="space-y-5">
+            <div className="flex justify-center pt-2">
+              <div className="relative">
+                <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-2 border-[#ff7e00]/50 bg-black">
+                  {formData.avatar ? (
+                    <img src={formData.avatar as string} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <User className="h-12 w-12 text-[#9ca3af]" />
+                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <input placeholder="WhatsApp" className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.phone_whatsapp || ''} onChange={e => setFormData({ ...formData, phone_whatsapp: e.target.value })} />
-                  <select className="bg-bg-main border p-4 rounded-2xl text-sm" value={formData.role || 'aluno'} onChange={e => setFormData({ ...formData, role: e.target.value })}>
-                    <option value="aluno">Aluno</option>
-                    <option value="tutor">Tutor</option>
-                    <option value="aluno_tutor">Aluno e Tutor</option>
-                  </select>
+                <label className="btn-infernus-primary absolute -bottom-1 -right-1 cursor-pointer rounded-full p-2.5">
+                  <Camera className="h-4 w-4" />
+                  <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                </label>
+              </div>
+            </div>
+            <div className="grid gap-3">
+              <input
+                placeholder="Nome"
+                className="infernus-input w-full p-4 text-sm"
+                value={formData.name as string}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+              <input
+                placeholder="E-mail"
+                className="infernus-input w-full p-4 text-sm"
+                value={formData.email as string}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <input
+                  placeholder="Instituição"
+                  className="infernus-input w-full p-4 text-sm"
+                  value={formData.institution as string}
+                  onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+                />
+                <input
+                  placeholder="Curso"
+                  className="infernus-input w-full p-4 text-sm"
+                  value={formData.course as string}
+                  onChange={(e) => setFormData({ ...formData, course: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <input
+                  placeholder="Período (ex: 8º)"
+                  className="infernus-input w-full p-4 text-sm"
+                  value={formData.period as string}
+                  onChange={(e) => setFormData({ ...formData, period: e.target.value })}
+                />
+                <input
+                  placeholder="WhatsApp"
+                  className="infernus-input w-full p-4 text-sm"
+                  value={formData.phone_whatsapp as string}
+                  onChange={(e) => setFormData({ ...formData, phone_whatsapp: e.target.value })}
+                />
+              </div>
+              <div className="infernus-inner-panel p-3">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[#cee7f3]">Você é</p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  {ONBOARDING_ROLE_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, role: option.value })}
+                      className={`infernus-role-btn px-2 py-2.5 ${formData.role === option.value ? 'active' : ''}`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <button onClick={() => setStep(2)} className="w-full bg-primary text-white font-black py-4 rounded-2xl">Continuar</button>
             </div>
-          ) : (
-            <div className="space-y-6">
-              <textarea placeholder="O que você ensina?" className="w-full bg-bg-main border p-4 rounded-2xl h-24 text-sm" value={formData.skillsOffer} onChange={e => setFormData({ ...formData, skillsOffer: e.target.value })} />
-              <textarea placeholder="O que você busca?" className="w-full bg-bg-main border p-4 rounded-2xl h-24 text-sm" value={formData.skillsSeek} onChange={e => setFormData({ ...formData, skillsSeek: e.target.value })} />
-              <button onClick={() => onFinish({ ...formData, info: `${formData.course} - ${formData.period} Período`, onboarded: true })} className="w-full bg-primary text-white font-black py-4 rounded-2xl">Finalizar</button>
+            <button type="button" onClick={() => setStep(2)} className="btn-infernus-primary w-full rounded-2xl py-4 font-black">
+              Continuar
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <textarea
+              placeholder="O que você ensina?"
+              className="infernus-input h-28 w-full resize-none p-4 text-sm"
+              value={formData.skillsOffer as string}
+              onChange={(e) => setFormData({ ...formData, skillsOffer: e.target.value })}
+            />
+            <textarea
+              placeholder="O que você busca?"
+              className="infernus-input h-28 w-full resize-none p-4 text-sm"
+              value={formData.skillsSeek as string}
+              onChange={(e) => setFormData({ ...formData, skillsSeek: e.target.value })}
+            />
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="btn-infernus-outline flex-1 rounded-2xl py-4 text-sm font-bold"
+              >
+                Voltar
+              </button>
+              <button type="button" onClick={finish} className="btn-infernus-primary flex-[2] rounded-2xl py-4 font-black">
+                {isEditing ? 'Salvar' : 'Finalizar'}
+              </button>
             </div>
-          )}
-        </div>
-      </motion.div>
-    </div>
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 };
 
@@ -161,43 +398,46 @@ export const StudentDashboardView = ({
   requests: Array<{ id: number; title: string; tutor: string; status: string }>;
 }) => {
   const trialActive = trialEndsAt ? new Date(trialEndsAt) > new Date() : false;
+  const statItems = [
+    { label: 'Solicitados', value: stats.total },
+    { label: 'Em andamento', value: stats.inProgress },
+    { label: 'Concluídos', value: stats.completed },
+  ];
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-surface border border-border-main rounded-2xl p-5">
-          <p className="text-xs text-text-muted uppercase">Solicitados</p>
-          <p className="text-3xl font-black">{stats.total}</p>
-        </div>
-        <div className="bg-surface border border-border-main rounded-2xl p-5">
-          <p className="text-xs text-text-muted uppercase">Em andamento</p>
-          <p className="text-3xl font-black">{stats.inProgress}</p>
-        </div>
-        <div className="bg-surface border border-border-main rounded-2xl p-5">
-          <p className="text-xs text-text-muted uppercase">Concluídos</p>
-          <p className="text-3xl font-black">{stats.completed}</p>
-        </div>
+    <div className="animate-in fade-in space-y-6 duration-500">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {statItems.map((item) => (
+          <div key={item.label} className="infernus-card rounded-2xl p-5">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#9ca3af]">{item.label}</p>
+            <p className="mt-2 text-4xl font-black text-white">{item.value}</p>
+          </div>
+        ))}
       </div>
-      <div className={`rounded-2xl border p-5 ${trialActive ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
-        <p className="text-sm font-bold">
-          {trialActive ? 'Período de teste ativo' : 'Período de teste expirado'}
+      <div
+        className={`infernus-card rounded-2xl p-5 ${
+          trialActive ? 'bg-black/40' : 'border-red-500/50 bg-red-950/20'
+        }`}
+      >
+        <p className="text-sm font-bold uppercase tracking-wide text-[#ff7e00]">
+          {trialActive ? '⚡ Período de teste ativo' : 'Período de teste expirado'}
         </p>
-        <p className="text-xs text-text-muted mt-1">
+        <p className="mt-1 text-sm text-[#9ca3af]">
           {trialEndsAt ? `Válido até ${new Date(trialEndsAt).toLocaleDateString()}` : 'Sem período de teste cadastrado.'}
         </p>
       </div>
       <div className="space-y-3">
-        <h3 className="text-lg font-bold">Solicitações recentes</h3>
+        <h3 className="text-lg font-bold uppercase tracking-wide text-white">Solicitações recentes</h3>
         {requests.length === 0 ? (
-          <p className="text-text-muted">Nenhuma solicitação de serviço ainda.</p>
+          <p className="text-[#9ca3af]">Nenhuma solicitação de serviço ainda.</p>
         ) : (
           requests.map((req) => (
-            <div key={req.id} className="bg-surface border border-border-main rounded-xl p-4 flex justify-between">
+            <div key={req.id} className="infernus-card flex items-center justify-between rounded-xl p-4">
               <div>
-                <p className="font-semibold">{req.title}</p>
-                <p className="text-xs text-text-muted">Tutor: {req.tutor}</p>
+                <p className="font-semibold text-white">{req.title}</p>
+                <p className="text-xs text-[#9ca3af]">Tutor: {req.tutor}</p>
               </div>
-              <span className="text-xs uppercase font-bold text-primary">{req.status}</span>
+              <span className="text-xs font-bold uppercase text-[#ff7e00]">{req.status}</span>
             </div>
           ))
         )}
@@ -215,20 +455,25 @@ export const TutorDashboardView = ({
   requests: Array<{ id: number; student: string; title: string; status: string }>;
   onAction: (id: number, status: 'accepted' | 'scheduled' | 'completed' | 'declined') => Promise<void>;
 }) => (
-  <div className="space-y-8">
+  <div className="animate-in fade-in space-y-8 duration-500">
     <div>
-      <h3 className="text-lg font-bold mb-3">Serviços ofertados</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <h3 className="mb-3 text-lg font-bold uppercase tracking-wide text-white">Serviços ofertados</h3>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {services.length === 0 ? (
-          <p className="text-text-muted">Você ainda não cadastrou serviços.</p>
+          <p className="text-[#9ca3af]">Você ainda não cadastrou serviços.</p>
         ) : (
           services.map((service) => (
-            <div key={service.id} className="bg-surface border border-border-main rounded-xl p-4 space-y-3">
+            <div key={service.id} className="infernus-card space-y-3 rounded-xl p-4">
               <div>
-                <p className="font-semibold">{service.title}</p>
-                <p className="text-xs text-text-muted">{service.category}</p>
+                <p className="font-semibold text-white">{service.title}</p>
+                <p className="text-xs text-[#9ca3af]">{service.category}</p>
               </div>
-              <a href={service.whatsappUrl} target="_blank" rel="noreferrer" className="inline-block text-xs font-bold text-primary">
+              <a
+                href={service.whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-block text-xs font-bold text-[#ff7e00] hover:text-[#ff9533]"
+              >
                 Enviar mensagem para meu WhatsApp
               </a>
             </div>
@@ -237,25 +482,45 @@ export const TutorDashboardView = ({
       </div>
     </div>
     <div>
-      <h3 className="text-lg font-bold mb-3">Solicitações recebidas</h3>
+      <h3 className="mb-3 text-lg font-bold uppercase tracking-wide text-white">Solicitações recebidas</h3>
       <div className="space-y-3">
         {requests.length === 0 ? (
-          <p className="text-text-muted">Nenhuma solicitação recebida.</p>
+          <p className="text-[#9ca3af]">Nenhuma solicitação recebida.</p>
         ) : (
           requests.map((req) => (
-            <div key={req.id} className="bg-surface border border-border-main rounded-xl p-4">
-              <div className="flex justify-between items-center">
+            <div key={req.id} className="infernus-card rounded-xl p-4">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-semibold">{req.title}</p>
-                  <p className="text-xs text-text-muted">Aluno: {req.student}</p>
+                  <p className="font-semibold text-white">{req.title}</p>
+                  <p className="text-xs text-[#9ca3af]">Aluno: {req.student}</p>
                 </div>
-                <span className="text-[10px] uppercase font-bold text-primary">{req.status}</span>
+                <span className="text-[10px] font-bold uppercase text-[#ff7e00]">{req.status}</span>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
-                <button onClick={() => onAction(req.id, 'accepted')} className="bg-primary text-white text-xs py-2 rounded-lg">Aceitar</button>
-                <button onClick={() => onAction(req.id, 'scheduled')} className="bg-indigo-500 text-white text-xs py-2 rounded-lg">Agendar</button>
-                <button onClick={() => onAction(req.id, 'completed')} className="bg-emerald-600 text-white text-xs py-2 rounded-lg">Concluir</button>
-                <button onClick={() => onAction(req.id, 'declined')} className="bg-slate-200 text-xs py-2 rounded-lg">Recusar</button>
+              <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
+                <button type="button" onClick={() => onAction(req.id, 'accepted')} className="btn-infernus-primary rounded-lg py-2 text-xs font-bold">
+                  Aceitar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onAction(req.id, 'scheduled')}
+                  className="btn-infernus-outline rounded-lg py-2 text-xs font-bold"
+                >
+                  Agendar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onAction(req.id, 'completed')}
+                  className="rounded-lg border border-[#ff7e00]/50 bg-[#ff7e00]/15 py-2 text-xs font-bold text-[#ff7e00]"
+                >
+                  Concluir
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onAction(req.id, 'declined')}
+                  className="rounded-lg border border-white/15 bg-black py-2 text-xs font-bold text-[#9ca3af]"
+                >
+                  Recusar
+                </button>
               </div>
             </div>
           ))
@@ -265,6 +530,12 @@ export const TutorDashboardView = ({
   </div>
 );
 
+const billingCycleLabel: Record<string, string> = {
+  monthly: 'mês',
+  yearly: 'ano',
+  trial: 'teste',
+};
+
 export const PlansView = ({
   plans,
   onSubscribe,
@@ -272,19 +543,32 @@ export const PlansView = ({
   plans: Array<{ id: number; name: string; description: string; price_cents: number; billing_cycle: string }>;
   onSubscribe: (planId: number) => Promise<void>;
 }) => (
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-    {plans.map((plan) => (
-      <div key={plan.id} className="bg-surface border border-border-main rounded-2xl p-6">
-        <h3 className="text-xl font-black">{plan.name}</h3>
-        <p className="text-sm text-text-muted mt-2">{plan.description}</p>
-        <p className="text-2xl font-black mt-4">
-          R$ {(plan.price_cents / 100).toFixed(2)} <span className="text-xs font-medium">/{plan.billing_cycle}</span>
-        </p>
-        <button onClick={() => onSubscribe(plan.id)} className="w-full mt-6 bg-primary text-white py-3 rounded-xl font-bold">
-          Assinar plano
-        </button>
-      </div>
-    ))}
+  <div className="animate-in fade-in duration-500">
+    <div className="infernus-panel grid grid-cols-1 gap-5 md:grid-cols-3">
+      {plans.length === 0 ? (
+        <p className="col-span-full py-12 text-center text-[#9ca3af]">Nenhum plano disponível no momento.</p>
+      ) : (
+        plans.map((plan) => (
+          <div key={plan.id} className="infernus-plan-card flex flex-col p-6">
+            <h3 className="text-xl font-black text-white">{plan.name}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-[#9ca3af]">{plan.description}</p>
+            <p className="mt-5 text-2xl font-black text-white">
+              R$ {(plan.price_cents / 100).toFixed(2)}{' '}
+              <span className="text-xs font-medium text-[#cee7f3]">
+                /{billingCycleLabel[plan.billing_cycle] ?? plan.billing_cycle}
+              </span>
+            </p>
+            <button
+              type="button"
+              onClick={() => onSubscribe(plan.id)}
+              className="btn-infernus-primary mt-6 w-full rounded-xl py-3 text-sm uppercase tracking-wide"
+            >
+              Assinar plano
+            </button>
+          </div>
+        ))
+      )}
+    </div>
   </div>
 );
 
@@ -301,41 +585,69 @@ export const PaymentMethodsView = ({
   const [last4, setLast4] = useState('');
 
   return (
-    <div className="space-y-6">
-      <div className="bg-surface border border-border-main rounded-2xl p-6 space-y-4">
-        <h3 className="text-lg font-bold">Adicionar método de pagamento</h3>
-        <select value={type} onChange={(e) => setType(e.target.value as 'pix' | 'credito' | 'debito')} className="w-full border rounded-xl p-3 bg-bg-main">
-          <option value="pix">PIX</option>
-          <option value="credito">Cartão de Crédito</option>
-          <option value="debito">Cartão de Débito</option>
-        </select>
-        {type === 'pix' ? (
-          <input value={pixKey} onChange={(e) => setPixKey(e.target.value)} placeholder="Chave PIX" className="w-full border rounded-xl p-3 bg-bg-main" />
-        ) : (
-          <>
-            <input value={provider} onChange={(e) => setProvider(e.target.value)} placeholder="Bandeira/Operadora" className="w-full border rounded-xl p-3 bg-bg-main" />
-            <input value={last4} onChange={(e) => setLast4(e.target.value)} placeholder="Últimos 4 dígitos" className="w-full border rounded-xl p-3 bg-bg-main" />
-          </>
-        )}
-        <button
-          onClick={() => onSave({ type, provider, pix_key: pixKey, last4 })}
-          className="bg-primary text-white py-3 px-6 rounded-xl font-bold"
-        >
-          Salvar método
-        </button>
-      </div>
-      <div className="space-y-2">
-        <h4 className="font-bold">Métodos salvos</h4>
-        {methods.length === 0 ? (
-          <p className="text-text-muted">Nenhum método cadastrado.</p>
-        ) : (
-          methods.map((method) => (
-            <div key={method.id} className="bg-surface border border-border-main rounded-xl p-4 flex justify-between">
-              <span className="uppercase text-sm font-semibold">{method.type}</span>
-              <span className="text-xs text-text-muted">{method.pix_key || `${method.provider || ''} ****${method.last4 || ''}`}</span>
-            </div>
-          ))
-        )}
+    <div className="animate-in fade-in space-y-6 duration-500">
+      <div className="infernus-panel space-y-6">
+        <div className="infernus-inner-panel space-y-4 p-6">
+          <h3 className="text-lg font-bold text-white">Adicionar método de pagamento</h3>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value as 'pix' | 'credito' | 'debito')}
+            className="infernus-input w-full p-3 text-sm"
+          >
+            <option value="pix">PIX</option>
+            <option value="credito">Cartão de Crédito</option>
+            <option value="debito">Cartão de Débito</option>
+          </select>
+          {type === 'pix' ? (
+            <input
+              value={pixKey}
+              onChange={(e) => setPixKey(e.target.value)}
+              placeholder="Chave PIX"
+              className="infernus-input w-full p-3 text-sm"
+            />
+          ) : (
+            <>
+              <input
+                value={provider}
+                onChange={(e) => setProvider(e.target.value)}
+                placeholder="Bandeira/Operadora"
+                className="infernus-input w-full p-3 text-sm"
+              />
+              <input
+                value={last4}
+                onChange={(e) => setLast4(e.target.value)}
+                placeholder="Últimos 4 dígitos"
+                className="infernus-input w-full p-3 text-sm"
+              />
+            </>
+          )}
+          <button
+            type="button"
+            onClick={() => onSave({ type, provider, pix_key: pixKey, last4 })}
+            className="btn-infernus-primary rounded-xl px-6 py-3 text-sm"
+          >
+            Salvar método
+          </button>
+        </div>
+
+        <div className="space-y-3 px-1">
+          <h4 className="font-bold text-white">Métodos salvos</h4>
+          {methods.length === 0 ? (
+            <p className="text-[#9ca3af]">Nenhum método cadastrado.</p>
+          ) : (
+            methods.map((method) => (
+              <div
+                key={method.id}
+                className="infernus-inner-panel flex items-center justify-between rounded-xl p-4"
+              >
+                <span className="text-sm font-semibold uppercase text-[#ff7e00]">{method.type}</span>
+                <span className="text-xs text-[#cee7f3]">
+                  {method.pix_key || `${method.provider || ''} ****${method.last4 || ''}`}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

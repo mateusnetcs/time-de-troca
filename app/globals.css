@@ -4,29 +4,24 @@
 @theme {
   --font-sans: var(--font-inter);
   --font-outfit: var(--font-outfit);
-  
-  --color-primary: #4F46E5;
-  --color-primary-light: #EEF2FF;
-  --color-success: #10B981;
-  --color-bg-main: #F8FAFC;
-  --color-surface: #FFFFFF;
-  --color-text-main: #1E293B;
-  --color-text-muted: #64748B;
-  --color-border-main: #E2E8F0;
-  
+
+  --color-primary: #2a0080;
+  --color-primary-light: #cee7f3;
+  --color-accent: #ff7e00;
+  --color-accent-light: #fff4e8;
+  --color-success: #ff7e00;
+  --color-bg-main: #f4f8fb;
+  --color-surface: #ffffff;
+  --color-text-main: #1e293b;
+  --color-text-muted: #64748b;
+  --color-border-main: #e2e8f0;
+
   --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 :root {
-  --selection-bg: #e0e7ff;
-  --selection-text: #4338ca;
-  
-  /* Fallback definitions for non-tailwind contexts or older browsers */
-  --primary: #4F46E5;
-  --bg-main: #F8FAFC;
-  --surface: #FFFFFF;
-  --text-main: #1E293B;
-  --text-muted: #64748B;
+  --selection-bg: #cee7f3;
+  --selection-text: #2a0080;
 }
 
 ::selection {
@@ -44,13 +39,397 @@
 }
 
 body {
-  @apply bg-bg-main text-text-main antialiased selection:bg-indigo-100 selection:text-indigo-900;
+  @apply bg-bg-main text-text-main antialiased;
 }
 
 .card-shadow {
   box-shadow: var(--shadow-card);
 }
 
-.innovation-gradient {
-  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+/* Botão primário — laranja #ff7e00 em todo o projeto */
+.btn-action,
+button.bg-primary,
+a.bg-primary,
+label.bg-primary,
+[type='submit'].bg-primary {
+  background-color: #ff7e00 !important;
+  color: #ffffff !important;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.btn-action:hover:not(:disabled),
+button.bg-primary:hover:not(:disabled),
+a.bg-primary:hover,
+label.bg-primary:hover,
+[type='submit'].bg-primary:hover:not(:disabled) {
+  background-color: #ff9533 !important;
+  box-shadow: 0 0 24px rgba(255, 126, 0, 0.5);
+}
+
+.btn-action {
+  font-weight: 700;
+  box-shadow: 0 0 20px rgba(255, 126, 0, 0.4);
+}
+
+/* ========== Tema INFERNUS (painel sistema) ========== */
+.sistema-shell.sistema-role-tutor .infernus-title-glow {
+  text-shadow:
+    0 0 36px rgba(255, 126, 0, 0.45),
+    0 0 64px rgba(206, 231, 243, 0.25);
+}
+
+.sistema-shell {
+  --color-primary: #2a0080;
+  --color-primary-light: #cee7f3;
+  --color-accent: #ff7e00;
+  --color-bg-main: #000000;
+  --color-surface: #0a0a0a;
+  --color-text-main: #ffffff;
+  --color-text-muted: #9ca3af;
+  --color-border-main: rgba(255, 126, 0, 0.25);
+  background-color: #000000;
+  color: #ffffff;
+  min-height: 100vh;
+}
+
+.sistema-shell .infernus-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 0%, rgba(42, 0, 128, 0.45), transparent 55%),
+    radial-gradient(ellipse 40% 30% at 80% 20%, rgba(255, 126, 0, 0.15), transparent),
+    radial-gradient(ellipse 35% 25% at 10% 60%, rgba(206, 231, 243, 0.06), transparent),
+    #000000;
+}
+
+.sistema-shell .infernus-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.sistema-shell .infernus-title-glow {
+  text-shadow:
+    0 0 40px rgba(255, 126, 0, 0.55),
+    0 0 80px rgba(42, 0, 128, 0.8);
+}
+
+.sistema-shell .btn-infernus-primary {
+  background: #ff7e00;
+  color: #ffffff;
+  box-shadow: 0 0 28px rgba(255, 126, 0, 0.55);
+}
+
+.sistema-shell .btn-infernus-primary:hover {
+  background: #ff9533;
+}
+
+.sistema-shell .btn-infernus-outline {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 126, 0, 0.55);
+  color: #ffffff;
+}
+
+.sistema-shell .btn-infernus-outline:hover {
+  border-color: #ff7e00;
+  background: rgba(255, 126, 0, 0.08);
+}
+
+.sistema-shell .infernus-icon-box {
+  border: 1px solid rgba(255, 126, 0, 0.35);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.sistema-shell .infernus-card {
+  background: #0a0a0a;
+  border: 1px solid #ff7e00;
+}
+
+.sistema-shell .skill-card-infernus {
+  background: #0a0a0a;
+  border: 1px solid #ff7e00;
+  border-radius: 16px;
+  box-shadow: 0 0 24px rgba(255, 126, 0, 0.08);
+}
+
+.sistema-shell .skill-card-infernus:hover {
+  box-shadow: 0 0 32px rgba(255, 126, 0, 0.2);
+}
+
+.sistema-shell .skill-card-action {
+  background: #ff7e00;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255, 126, 0, 0.55);
+}
+
+.sistema-shell .infernus-member-grid {
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid #ff7e00;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 0 32px rgba(255, 126, 0, 0.12);
+}
+
+.sistema-shell .infernus-member-card {
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+.sistema-shell .infernus-member-card:hover {
+  border-color: #ff7e00;
+  box-shadow: 0 0 24px rgba(255, 126, 0, 0.25);
+  transform: translateY(-2px);
+}
+
+.sistema-shell .infernus-panel {
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid #ff7e00;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 0 32px rgba(255, 126, 0, 0.12);
+}
+
+.sistema-shell .infernus-inner-panel {
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+}
+
+.sistema-shell .infernus-plan-card {
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.sistema-shell .infernus-plan-card:hover {
+  border-color: rgba(255, 126, 0, 0.45);
+  box-shadow: 0 0 20px rgba(255, 126, 0, 0.15);
+}
+
+.sistema-shell .infernus-input,
+.sistema-shell .infernus-input option {
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: #ffffff;
+}
+
+.sistema-shell .infernus-input::placeholder {
+  color: #9ca3af;
+}
+
+.sistema-shell .infernus-input:focus {
+  outline: none;
+  border-color: #ff7e00;
+  box-shadow: 0 0 0 2px rgba(255, 126, 0, 0.25);
+}
+
+.sistema-shell .infernus-btn-purple {
+  background: #ff7e00;
+  color: #ffffff;
+  border-radius: 12px;
+  font-weight: 700;
+  box-shadow: 0 0 20px rgba(255, 126, 0, 0.45);
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.sistema-shell .infernus-btn-purple:hover {
+  background: #ff9533;
+  box-shadow: 0 0 28px rgba(255, 126, 0, 0.55);
+}
+
+.sistema-shell .infernus-auth-card {
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid #ff7e00;
+  border-radius: 24px;
+  box-shadow: 0 0 40px rgba(255, 126, 0, 0.15);
+}
+
+.sistema-shell .infernus-auth-tab {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  color: #9ca3af;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.sistema-shell .infernus-auth-tab.active {
+  background: #ff7e00;
+  border-color: #ff7e00;
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(255, 126, 0, 0.45);
+}
+
+.sistema-shell .infernus-role-btn {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.sistema-shell .infernus-role-btn.active {
+  background: #ff7e00;
+  border-color: #ff7e00;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(255, 126, 0, 0.35);
+}
+
+.sistema-shell .infernus-plan-pick {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: #000000;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.sistema-shell .infernus-plan-pick.active {
+  border-color: #ff7e00;
+  box-shadow: 0 0 16px rgba(255, 126, 0, 0.2);
+}
+
+/* Sidebar do modal de perfil — mesmo tema escuro + laranja do sistema */
+.sistema-shell .infernus-onboarding-sidebar {
+  background: #000000;
+  border-right: 1px solid rgba(255, 126, 0, 0.35);
+}
+
+.sistema-shell .infernus-onboarding-sidebar-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(255, 126, 0, 0.14), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(255, 126, 0, 0.06), transparent 50%),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size:
+    auto,
+    auto,
+    32px 32px,
+    32px 32px;
+}
+
+.sistema-shell .infernus-onboarding-tip {
+  border: 1px solid rgba(255, 126, 0, 0.25);
+  background: rgba(255, 126, 0, 0.06);
+}
+
+.sistema-shell .infernus-onboarding-step-active {
+  border-color: #ff7e00 !important;
+  background: rgba(255, 126, 0, 0.08);
+  box-shadow: 0 0 20px rgba(255, 126, 0, 0.2);
+}
+
+.sistema-shell .infernus-nav-link {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.sistema-shell .infernus-nav-link:hover,
+.sistema-shell .infernus-nav-link.active {
+  color: #ff7e00;
+}
+
+.sistema-shell .infernus-tab {
+  border: 1px solid transparent;
+  color: #9ca3af;
+  background: transparent;
+}
+
+.sistema-shell .infernus-tab:hover {
+  color: #ffffff;
+  border-color: rgba(255, 126, 0, 0.3);
+}
+
+.sistema-shell .infernus-tab.active {
+  background: #ff7e00;
+  color: #ffffff;
+  border-color: #ff7e00;
+  box-shadow: 0 0 20px rgba(255, 126, 0, 0.45);
+}
+
+/* Modal de troca — tema escuro INFERNUS (fundo preto + borda laranja) */
+.exchange-modal-overlay {
+  background: rgba(0, 0, 0, 0.94);
+  backdrop-filter: blur(14px);
+}
+
+.exchange-modal-panel {
+  background: #0a0a0a;
+  border: 1px solid #ff7e00;
+  border-radius: 40px;
+  box-shadow:
+    0 0 48px rgba(255, 126, 0, 0.28),
+    0 24px 80px rgba(0, 0, 0, 0.85);
+}
+
+.exchange-modal-icon {
+  background: #cee7f3;
+}
+
+.exchange-modal-icon svg {
+  color: #2a0080;
+}
+
+.exchange-modal-text {
+  color: #9ca3af;
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.exchange-modal-highlight {
+  color: #ff7e00;
+  font-weight: 700;
+}
+
+.exchange-modal-btn-cancel {
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.exchange-modal-btn-cancel:hover {
+  opacity: 0.85;
+}
+
+.exchange-modal-btn-confirm {
+  background: #ff7e00;
+  color: #ffffff;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 0 28px rgba(255, 126, 0, 0.55);
+}
+
+.exchange-modal-btn-confirm:hover {
+  background: #ff9533;
+  box-shadow: 0 0 36px rgba(255, 126, 0, 0.65);
 }

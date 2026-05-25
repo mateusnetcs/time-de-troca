@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { X, Send, Rocket, Zap, Star } from 'lucide-react';
+import { motion } from 'motion/react';
+import { X, Send, Zap } from 'lucide-react';
+import { OnboardingView } from '@/components/AppViews';
 
 export const ChatOverlay = ({ isOpen, onClose, targetStudent }: { isOpen: boolean, onClose: () => void, targetStudent: string }) => {
   const [msg, setMsg] = useState('');
@@ -15,7 +16,7 @@ export const ChatOverlay = ({ isOpen, onClose, targetStudent }: { isOpen: boolea
           <button onClick={onClose} className="hover:rotate-90 transition-transform"><X className="w-6 h-6" /></button>
         </div>
         <div className="h-80 p-6 bg-slate-50 flex flex-col justify-end"><p className="bg-white p-4 rounded-2xl rounded-bl-none text-sm inline-block max-w-[80%] shadow-sm">Olá! Vi seu interesse em uma das minhas habilidades. Como posso te ajudar?</p></div>
-        <div className="p-6 bg-white flex gap-2"><input value={msg} onChange={e => setMsg(e.target.value)} placeholder="Type a message..." className="flex-1 bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20" /><button className="bg-primary text-white p-3 rounded-xl"><Send className="w-5 h-5" /></button></div>
+        <div className="p-6 bg-white flex gap-2"><input value={msg} onChange={e => setMsg(e.target.value)} placeholder="Type a message..." className="flex-1 bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-accent/20" /><button type="button" className="btn-action rounded-xl p-3"><Send className="w-5 h-5" /></button></div>
       </motion.div>
     </div>
   );
@@ -23,14 +24,91 @@ export const ChatOverlay = ({ isOpen, onClose, targetStudent }: { isOpen: boolea
 
 export const ExchangeModal = ({ isOpen, onClose, skill, onConfirm }: { isOpen: boolean, onClose: () => void, skill: any, onConfirm: () => void }) => {
   if (!isOpen || !skill) return null;
+
+  const creditLabel =
+    skill.credits === 1 ? `${skill.credits} Crédito` : `${skill.credits} Créditos`;
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-white w-full max-w-lg rounded-[3rem] relative shadow-2xl p-10 text-center">
-        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-8"><Zap className="w-10 h-10 text-emerald-600" /></div>
-        <h3 className="text-2xl font-black mb-4">Firmar Pacto de Troca?</h3>
-        <p className="text-text-muted mb-8">Ao confirmar, você entregará <span className="font-bold text-primary">{skill.credits} Crédito(s)</span> para <span className="font-bold text-text-main">{skill.student}</span> em troca da habilidade <span className="font-bold text-primary">{skill.title}</span>.</p>
-        <div className="grid grid-cols-2 gap-4"><button onClick={onClose} className="bg-bg-main text-text-muted font-bold py-4 rounded-2xl uppercase">Cancelar</button><button onClick={() => { onConfirm(); onClose(); }} className="bg-primary text-white font-bold py-4 rounded-2xl uppercase">Confirmar Troca</button></div>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        onClick={onClose}
+        className="exchange-modal-overlay absolute inset-0"
+      />
+      <motion.div
+        initial={{ y: 24, opacity: 0, scale: 0.95 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+        onClick={(e) => e.stopPropagation()}
+        className="exchange-modal-panel relative w-full max-w-[520px] px-10 py-12 text-center md:px-14 md:py-14"
+      >
+        <div className="exchange-modal-icon mx-auto mb-10 flex h-[88px] w-[88px] items-center justify-center rounded-full">
+          <Zap className="h-11 w-11" strokeWidth={2.25} />
+        </div>
+
+        <p className="exchange-modal-text mx-auto mb-12 max-w-[400px] md:text-lg">
+          Ao confirmar, você entregará{' '}
+          <span className="exchange-modal-highlight">{creditLabel}</span> em troca da habilidade{' '}
+          <span className="exchange-modal-highlight">{skill.title}</span>.
+        </p>
+
+        <div className="grid grid-cols-2 gap-4">
+          <button type="button" onClick={onClose} className="exchange-modal-btn-cancel px-4 py-[18px] transition-opacity">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className="exchange-modal-btn-confirm px-4 py-[18px] transition-all"
+          >
+            Confirmar Troca
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export const ProfileOnboardingModal = ({
+  isOpen,
+  onClose,
+  user,
+  onFinish,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  user: Record<string, unknown> | null;
+  onFinish: (data: Record<string, unknown>) => void | Promise<void>;
+}) => {
+  if (!isOpen || !user) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        onClick={onClose}
+        className="exchange-modal-overlay absolute inset-0"
+      />
+      <motion.div
+        initial={{ y: 20, opacity: 0, scale: 0.97 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative z-10 w-full max-w-4xl max-h-[92vh] overflow-y-auto"
+      >
+        <OnboardingView
+          currentData={user}
+          onClose={onClose}
+          onFinish={async (data) => {
+            await onFinish(data);
+            onClose();
+          }}
+        />
       </motion.div>
     </div>
   );

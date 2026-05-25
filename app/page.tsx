@@ -35,7 +35,7 @@ export default function LandingPage() {
       <section className="max-w-6xl mx-auto px-6 py-10 md:py-14">
         <header className="flex items-center justify-between mb-14">
           <h1 className="text-3xl md:text-4xl font-black tracking-tight">SkillNet</h1>
-          <Link href="/login" className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold shadow-sm hover:opacity-90">
+          <Link href="/login" className="btn-action rounded-xl px-6 py-2.5 font-bold shadow-sm">
             Entrar
           </Link>
         </header>
@@ -50,7 +50,7 @@ export default function LandingPage() {
               Uma experiência elegante para alunos e tutores, com assinatura simples, acompanhamento de solicitações e suporte contínuo.
             </p>
             <div className="flex gap-3 mt-8">
-              <Link href="/login" className="bg-primary text-white px-6 py-3 rounded-xl font-bold">
+              <Link href="/login" className="btn-action rounded-xl px-6 py-3 font-bold">
                 Começar agora
               </Link>
               <a href="#planos" className="border border-border-main px-6 py-3 rounded-xl font-bold">
@@ -104,7 +104,7 @@ export default function LandingPage() {
                     <li key={feature} className="text-sm">{feature}</li>
                   ))}
                 </ul>
-                <Link href="/login" className="block text-center mt-8 bg-primary text-white rounded-xl py-3 font-bold">
+                <Link href="/login" className="btn-action mt-8 block rounded-xl py-3 text-center font-bold">
                   {plan.cta}
                 </Link>
               </div>
