@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { X, Send, Zap } from 'lucide-react';
 import { OnboardingView } from '@/components/AppViews';
+import type { OnboardingInput, UserProfile } from '@/lib/types';
 
 export const ChatOverlay = ({ isOpen, onClose, targetStudent }: { isOpen: boolean, onClose: () => void, targetStudent: string }) => {
   const [msg, setMsg] = useState('');
@@ -81,8 +82,8 @@ export const ProfileOnboardingModal = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  user: Record<string, unknown> | null;
-  onFinish: (data: Record<string, unknown>) => void | Promise<void>;
+  user: UserProfile | null;
+  onFinish: (data: OnboardingInput) => void | Promise<void>;
 }) => {
   if (!isOpen || !user) return null;
 

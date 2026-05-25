@@ -27,6 +27,26 @@ export interface UserProfile {
   updated_at: string;
 }
 
+export type OnboardingInput = {
+  name: string;
+  email: string;
+  institution: string;
+  course: string;
+  period: string;
+  avatar: string;
+  role?: ProfileRole;
+  phone_whatsapp?: string;
+  skillsOffer: string;
+  skillsSeek: string;
+  info?: string;
+  onboarded?: boolean;
+};
+
+export type OnboardingFormState = UserProfile & {
+  skillsOffer: string;
+  skillsSeek: string;
+};
+
 export interface Skill {
   id: number;
   title: string;

@@ -11,6 +11,7 @@ import type {
   Skill,
   Subscription,
   UserProfile,
+  OnboardingInput,
 } from '@/lib/types';
 
 type NewSkillInput = {
@@ -18,19 +19,6 @@ type NewSkillInput = {
   description: string;
   category: string;
   credits: number;
-};
-
-type OnboardingInput = {
-  name: string;
-  email: string;
-  institution: string;
-  course: string;
-  period: string;
-  avatar: string;
-  role?: 'aluno' | 'tutor' | 'aluno_tutor';
-  phone_whatsapp?: string;
-  skillsOffer: string;
-  skillsSeek: string;
 };
 
 function requireClient() {

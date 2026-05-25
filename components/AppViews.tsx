@@ -6,7 +6,7 @@ import {
   ArrowLeftRight, Camera, User, X, Sparkles, UserCircle
 } from 'lucide-react';
 import { CATEGORIES } from '@/lib/data';
-import type { ProfileRole } from '@/lib/types';
+import type { OnboardingFormState, OnboardingInput, ProfileRole, UserProfile } from '@/lib/types';
 
 const ONBOARDING_ROLE_OPTIONS: { value: ProfileRole; label: string }[] = [
   { value: 'aluno', label: 'Aluno' },
@@ -14,16 +14,16 @@ const ONBOARDING_ROLE_OPTIONS: { value: ProfileRole; label: string }[] = [
   { value: 'aluno_tutor', label: 'Aluno e Instrutor' },
 ];
 
-function normalizeOnboardingData(data: Record<string, unknown>) {
+function normalizeOnboardingData(data: UserProfile): OnboardingFormState {
   return {
     ...data,
-    skillsOffer: (data.skills_offer as string) ?? (data.skillsOffer as string) ?? '',
-    skillsSeek: (data.skills_seek as string) ?? (data.skillsSeek as string) ?? '',
-    period: (data.period as string) ?? '',
-    institution: (data.institution as string) ?? '',
-    course: (data.course as string) ?? '',
-    phone_whatsapp: (data.phone_whatsapp as string) ?? (data.phone as string) ?? '',
-    role: (data.role as ProfileRole) ?? 'aluno',
+    skillsOffer: data.skills_offer ?? '',
+    skillsSeek: data.skills_seek ?? '',
+    period: data.period ?? '',
+    institution: data.institution ?? '',
+    course: data.course ?? '',
+    phone_whatsapp: data.phone_whatsapp || data.phone || '',
+    role: data.role ?? 'aluno',
   };
 }
 
@@ -140,8 +140,8 @@ export const OnboardingView = ({
   onFinish,
   onClose,
 }: {
-  currentData: Record<string, unknown>;
-  onFinish: (data: Record<string, unknown>) => void;
+  currentData: UserProfile;
+  onFinish: (data: OnboardingInput) => void;
   onClose?: () => void;
 }) => {
   const isEditing = !!currentData?.onboarded;
