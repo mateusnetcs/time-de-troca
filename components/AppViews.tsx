@@ -55,16 +55,13 @@ export const SkillCard = ({ skill, onExchange, onOpenChat, onSelectStudent }: {
         </div>
         <span className="text-sm font-medium text-[#9ca3af] transition-colors group-hover/author:text-[#cee7f3]">{skill.student}</span>
       </button>
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-bold text-[#ff7e00]">{skill.credits} T-C</span>
-        <button
-          type="button"
-          onClick={() => onExchange(skill)}
-          className="skill-card-action flex h-9 w-9 items-center justify-center text-white transition-transform active:scale-90"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => onExchange(skill)}
+        className="skill-card-action flex h-9 w-9 items-center justify-center text-white transition-transform active:scale-90"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
     </div>
   </motion.div>
 );
