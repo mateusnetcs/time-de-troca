@@ -26,9 +26,6 @@ export const ChatOverlay = ({ isOpen, onClose, targetStudent }: { isOpen: boolea
 export const ExchangeModal = ({ isOpen, onClose, skill, onConfirm }: { isOpen: boolean, onClose: () => void, skill: any, onConfirm: () => void }) => {
   if (!isOpen || !skill) return null;
 
-  const creditLabel =
-    skill.credits === 1 ? `${skill.credits} Crédito` : `${skill.credits} Créditos`;
-
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
       <motion.div
@@ -48,10 +45,9 @@ export const ExchangeModal = ({ isOpen, onClose, skill, onConfirm }: { isOpen: b
           <Zap className="h-11 w-11" strokeWidth={2.25} />
         </div>
 
-        <p className="exchange-modal-text mx-auto mb-12 max-w-[400px] md:text-lg">
-          Ao confirmar, você entregará{' '}
-          <span className="exchange-modal-highlight">{creditLabel}</span> em troca da habilidade{' '}
-          <span className="exchange-modal-highlight">{skill.title}</span>.
+        <p className="exchange-modal-text mx-auto mb-12 max-w-[400px] text-lg md:text-xl">
+          Tem certeza que deseja{' '}
+          <span className="exchange-modal-highlight">confirmar</span> a troca?
         </p>
 
         <div className="grid grid-cols-2 gap-4">
