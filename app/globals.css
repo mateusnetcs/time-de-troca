@@ -433,3 +433,58 @@ label.bg-primary:hover,
   background: #ff9533;
   box-shadow: 0 0 36px rgba(255, 126, 0, 0.65);
 }
+
+/* Chat global — estilo inspirado no Discord */
+.global-chat-fab {
+  background: #ff7e00;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 24px rgba(255, 126, 0, 0.5);
+}
+
+.global-chat-panel {
+  background: #1e1f22;
+  border: 1px solid rgba(255, 126, 0, 0.35);
+}
+
+.global-chat-header {
+  background: #2b2d31;
+}
+
+.global-chat-messages {
+  background: #313338;
+}
+
+.global-chat-bubble {
+  background: #40444b;
+}
+
+.global-chat-bubble-own {
+  background: rgba(255, 126, 0, 0.22);
+  border: 1px solid rgba(255, 126, 0, 0.25);
+}
+
+.global-chat-input-bar {
+  background: #2b2d31;
+}
+
+.global-chat-input {
+  background: #383a40;
+  border: 1px solid transparent;
+  color: #dbdee1;
+}
+
+.global-chat-input:focus {
+  border-color: rgba(255, 126, 0, 0.5);
+}
+
+.global-chat-input::placeholder {
+  color: #72767d;
+}
+
+.global-chat-send {
+  background: #ff7e00;
+}
+
+.global-chat-send:hover:not(:disabled) {
+  background: #ff9533;
+}

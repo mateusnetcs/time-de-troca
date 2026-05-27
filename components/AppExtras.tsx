@@ -2,9 +2,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Camera } from 'lucide-react';
+import { formatBrazilPhone, displayBrazilPhone } from '@/lib/phone';
 
 export const ProfileView = ({ user, onUpdate }: { user: any, onUpdate: (u: any) => void }) => {
-  const [formData, setFormData] = useState(user);
+  const [formData, setFormData] = useState({
+    ...user,
+    phone: displayBrazilPhone(user.phone),
+    phone_whatsapp: displayBrazilPhone(user.phone_whatsapp || user.phone),
+  });
   const [showSuccess, setShowSuccess] = useState(false);
   const handleFile = (e: any) => {
     const f = e.target.files?.[0];
@@ -21,8 +26,26 @@ export const ProfileView = ({ user, onUpdate }: { user: any, onUpdate: (u: any) 
       <form onSubmit={save} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input className="bg-bg-main border p-3 rounded-xl text-sm" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Nome" />
         <input className="bg-bg-main border p-3 rounded-xl text-sm" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="Email" />
-        <input className="bg-bg-main border p-3 rounded-xl text-sm" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="Telefone" />
-        <input className="bg-bg-main border p-3 rounded-xl text-sm" value={formData.phone_whatsapp || ''} onChange={e => setFormData({ ...formData, phone_whatsapp: e.target.value })} placeholder="WhatsApp" />
+        <input
+          type="tel"
+          className="bg-bg-main border p-3 rounded-xl text-sm"
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: formatBrazilPhone(e.target.value) })}
+          placeholder="(99) 98833-4466"
+          inputMode="numeric"
+          maxLength={16}
+        />
+        <input
+          type="tel"
+          className="bg-bg-main border p-3 rounded-xl text-sm"
+          value={formData.phone_whatsapp || ''}
+          onChange={(e) =>
+            setFormData({ ...formData, phone_whatsapp: formatBrazilPhone(e.target.value) })
+          }
+          placeholder="(99) 98833-4466"
+          inputMode="numeric"
+          maxLength={16}
+        />
         <select className="bg-bg-main border p-3 rounded-xl text-sm" value={formData.role || 'aluno'} onChange={e => setFormData({ ...formData, role: e.target.value })}>
           <option value="aluno">Aluno</option>
           <option value="tutor">Tutor</option>

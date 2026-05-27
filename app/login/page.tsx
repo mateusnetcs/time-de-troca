@@ -7,6 +7,7 @@ import { ArrowLeftRight } from 'lucide-react';
 import { authenticateAppUser, SESSION_PROFILE_KEY, SESSION_USERNAME_KEY } from '@/lib/auth';
 import { getSupabaseClient } from '@/lib/supabase';
 import type { Plan, ProfileRole } from '@/lib/types';
+import { formatBrazilPhone, isValidBrazilPhone } from '@/lib/phone';
 
 const ROLE_OPTIONS: { value: ProfileRole; label: string }[] = [
   { value: 'aluno', label: 'Aluno' },
@@ -100,6 +101,12 @@ export default function LoginPage() {
       setError('Selecione um plano para concluir o cadastro.');
       return;
     }
+    if (!isValidBrazilPhone(whatsapp)) {
+      setError('Informe um WhatsApp válido no formato (99) 98833-4466.');
+      return;
+    }
+
+    const formattedWhatsapp = formatBrazilPhone(whatsapp);
 
     const supabase = getSupabaseClient();
     if (!supabase) {
@@ -113,7 +120,7 @@ export default function LoginPage() {
         p_name: name,
         p_email: email,
         p_course: course,
-        p_whatsapp: whatsapp,
+        p_whatsapp: formattedWhatsapp,
         p_password: password,
         p_role: role,
         p_plan_id: selectedPlanId,
@@ -132,7 +139,7 @@ export default function LoginPage() {
           p_name: name,
           p_email: email,
           p_course: course,
-          p_whatsapp: whatsapp,
+          p_whatsapp: formattedWhatsapp,
           p_password: password,
           p_role: role,
         });
@@ -290,11 +297,13 @@ export default function LoginPage() {
                 required
               />
               <input
-                type="text"
+                type="tel"
                 value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
-                placeholder="WhatsApp"
+                onChange={(e) => setWhatsapp(formatBrazilPhone(e.target.value))}
+                placeholder="(99) 98833-4466"
                 className="infernus-input w-full p-3 text-sm"
+                inputMode="numeric"
+                maxLength={16}
                 required
               />
               <div className="infernus-inner-panel p-3">

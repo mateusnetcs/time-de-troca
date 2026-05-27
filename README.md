@@ -25,6 +25,7 @@ View your app in AI Studio: https://ai.studio/apps/5ccfb765-b7fe-4fca-b35c-79857
    - `supabase/migrations/20260519231000_app_login.sql`
    - `supabase/migrations/20260519232000_register_user_rpc.sql`
    - `supabase/migrations/20260519233500_fix_auth_hashing.sql` (correção caso apareça erro de `digest`)
+   - `supabase/migrations/20260527120000_global_chat.sql` (chat global)
 4. Run the app:
    `npm run dev`
 5. Login:

@@ -6,6 +6,7 @@ import {
   ArrowLeftRight, Camera, User, X, Sparkles, UserCircle
 } from 'lucide-react';
 import { CATEGORIES } from '@/lib/data';
+import { formatBrazilPhone, displayBrazilPhone } from '@/lib/phone';
 import type { OnboardingFormState, OnboardingInput, ProfileRole, UserProfile } from '@/lib/types';
 
 const ONBOARDING_ROLE_OPTIONS: { value: ProfileRole; label: string }[] = [
@@ -22,7 +23,7 @@ function normalizeOnboardingData(data: UserProfile): OnboardingFormState {
     period: data.period ?? '',
     institution: data.institution ?? '',
     course: data.course ?? '',
-    phone_whatsapp: data.phone_whatsapp || data.phone || '',
+    phone_whatsapp: displayBrazilPhone(data.phone_whatsapp || data.phone || ''),
     role: data.role ?? 'aluno',
   };
 }
@@ -326,10 +327,15 @@ export const OnboardingView = ({
                   onChange={(e) => setFormData({ ...formData, period: e.target.value })}
                 />
                 <input
-                  placeholder="WhatsApp"
+                  type="tel"
+                  placeholder="(99) 98833-4466"
                   className="infernus-input w-full p-4 text-sm"
                   value={formData.phone_whatsapp as string}
-                  onChange={(e) => setFormData({ ...formData, phone_whatsapp: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone_whatsapp: formatBrazilPhone(e.target.value) })
+                  }
+                  inputMode="numeric"
+                  maxLength={16}
                 />
               </div>
               <div className="infernus-inner-panel p-3">

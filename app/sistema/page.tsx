@@ -19,6 +19,7 @@ import {
 import { ProfileView, MembersView, RequestsView, IncomingRequestsView } from '@/components/AppExtras';
 import { ChatOverlay, ExchangeModal, ProfileOnboardingModal } from '@/components/AppModals';
 import { SuccessOverlay, QuickStats, StudentProfileOverlay } from '@/components/Misc';
+import { GlobalChat } from '@/components/GlobalChat';
 import {
   completeOnboarding,
   createServiceRequest,
@@ -466,11 +467,19 @@ export default function SistemaPage() {
         )}
       </main>
 
+      <GlobalChat currentUser={user} profilesById={profileById} />
+
       <AnimatePresence>
         {exchanging && <ExchangeModal isOpen={!!exchanging} onClose={() => setExchanging(null)} skill={exchanging} onConfirm={handleExchange} />}
         {success && <SuccessOverlay isOpen={success} onClose={() => setSuccess(false)} />}
         {activeChat && <ChatOverlay isOpen={!!activeChat} onClose={() => setActiveChat(null)} targetStudent={activeChat} />}
-        {selectedStudent && <StudentProfileOverlay profile={selectedStudent} onClose={() => setSelectedStudent(null)} />}
+        {selectedStudent && (
+          <StudentProfileOverlay
+            profile={selectedStudent}
+            viewer={user}
+            onClose={() => setSelectedStudent(null)}
+          />
+        )}
         {profileModalOpen && (
           <ProfileOnboardingModal
             isOpen={profileModalOpen}

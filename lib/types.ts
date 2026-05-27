@@ -134,3 +134,10 @@ export interface ServiceRequest {
   created_at: string;
   updated_at: string;
 }
+
+export interface GlobalChatMessage {
+  id: number;
+  profile_id: string;
+  content: string;
+  created_at: string;
+}

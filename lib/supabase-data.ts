@@ -1,4 +1,5 @@
 import { getSupabaseClient } from '@/lib/supabase';
+import { formatBrazilPhone } from '@/lib/phone';
 import type {
   CreditTransaction,
   ExchangeRequest,
@@ -12,6 +13,7 @@ import type {
   Subscription,
   UserProfile,
   OnboardingInput,
+  GlobalChatMessage,
 } from '@/lib/types';
 
 type NewSkillInput = {
@@ -290,7 +292,10 @@ export async function completeOnboarding(
     skills_offer: input.skillsOffer,
     skills_seek: input.skillsSeek,
     role: input.role ?? profile.role ?? 'aluno',
-    phone_whatsapp: input.phone_whatsapp ?? profile.phone_whatsapp ?? profile.phone,
+    phone: formatBrazilPhone(input.phone_whatsapp ?? profile.phone_whatsapp ?? profile.phone),
+    phone_whatsapp: formatBrazilPhone(
+      input.phone_whatsapp ?? profile.phone_whatsapp ?? profile.phone,
+    ),
     onboarded: true,
     credits: profile.onboarded ? profile.credits : profile.credits + 1,
     trial_started_at: profile.trial_started_at ?? new Date().toISOString(),
@@ -365,4 +370,54 @@ export async function handleIncomingRequest(
     .update({ status })
     .eq('id', request.id);
   if (statusError) throw statusError;
+}
+
+const GLOBAL_CHAT_PAGE_SIZE = 200;
+
+export async function fetchGlobalChatMessages(): Promise<GlobalChatMessage[]> {
+  const supabase = requireClient();
+  const { data, error } = await supabase
+    .from('global_chat_messages')
+    .select('*')
+    .order('created_at', { ascending: true })
+    .limit(GLOBAL_CHAT_PAGE_SIZE);
+  if (error) throw error;
+  return (data ?? []) as GlobalChatMessage[];
+}
+
+export async function sendGlobalChatMessage(
+  profileId: string,
+  content: string,
+): Promise<GlobalChatMessage> {
+  const supabase = requireClient();
+  const trimmed = content.trim();
+  if (!trimmed) {
+    throw new Error('Digite uma mensagem para enviar.');
+  }
+
+  const { data, error } = await supabase
+    .from('global_chat_messages')
+    .insert({ profile_id: profileId, content: trimmed })
+    .select('*')
+    .single();
+  if (error) throw error;
+  return data as GlobalChatMessage;
+}
+
+export function subscribeToGlobalChat(onMessage: (message: GlobalChatMessage) => void) {
+  const supabase = requireClient();
+  const channel = supabase
+    .channel('global-chat-geral')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'global_chat_messages' },
+      (payload) => {
+        onMessage(payload.new as GlobalChatMessage);
+      },
+    )
+    .subscribe();
+
+  return () => {
+    void supabase.removeChannel(channel);
+  };
 }
